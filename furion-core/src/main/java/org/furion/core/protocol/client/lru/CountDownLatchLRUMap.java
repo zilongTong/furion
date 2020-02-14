@@ -16,7 +16,7 @@ public class CountDownLatchLRUMap {
         countDownLatchMap.put(responseId, countDownLatch);
     }
 
-    private static CountDownLatch get(String responseId) {
+    public static CountDownLatch get(String responseId) {
         return countDownLatchMap.get(responseId);
     }
 

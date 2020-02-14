@@ -1,6 +1,7 @@
 package org.furion.core.protocol.server;
 
 
+import io.netty.channel.ChannelFuture;
 import org.furion.core.protocol.server.handler.GatewayHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -41,7 +42,15 @@ public class NettyServer {
     }
 
     public void start() {
-        serverBootstrap.bind(8080);
+        try {
+            ChannelFuture channelFuture = serverBootstrap.bind(8080).sync();
+            channelFuture.channel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            stop();
+        }
+
     }
 
     public void stop() {

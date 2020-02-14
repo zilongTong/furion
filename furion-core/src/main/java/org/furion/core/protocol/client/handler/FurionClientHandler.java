@@ -1,10 +1,14 @@
 package org.furion.core.protocol.client.handler;
 
+import org.furion.core.protocol.client.lru.CountDownLatchLRUMap;
+import org.furion.core.protocol.client.lru.ResponseLRUMap;
 import org.furion.core.utils.FurionResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
+
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Functional description
@@ -13,9 +17,6 @@ import io.netty.util.TimerTask;
  * @date 2020-01-02
  */
 public class FurionClientHandler extends SimpleChannelInboundHandler<FurionResponse> implements TimerTask {
-
-
-
 
 
     @Override
@@ -30,6 +31,7 @@ public class FurionClientHandler extends SimpleChannelInboundHandler<FurionRespo
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, FurionResponse furionResponse) throws Exception {
-
+        ResponseLRUMap.add(furionResponse.getRequestId(), furionResponse);
+        CountDownLatchLRUMap.get(furionResponse.getRequestId()).countDown();
     }
 }
