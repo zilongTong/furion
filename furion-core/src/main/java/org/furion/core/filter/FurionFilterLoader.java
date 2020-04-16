@@ -2,7 +2,6 @@ package org.furion.core.filter;
 
 
 /**
- * zuul-core
  * filter
  * FilterRegistry
  * FilterLoader
@@ -10,4 +9,7 @@ package org.furion.core.filter;
  * ZuulRunner
  */
 public class FurionFilterLoader {
+
+    private String packagePath;
+
 }

@@ -75,7 +75,6 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 
 
     private void connect() {
-
 //        FurionClientHandler handler = new FurionClientHandler(bootstrap, timer, server, true);
         EventLoopGroup group = new NioEventLoopGroup();
         String keyString = host.concat(":").concat(String.valueOf(port));
@@ -87,7 +86,6 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 //            RpcRequest request=new RpcRequest();
 //            request.setBaseMsg(new PingMsg());
 //            future.channel().writeAndFlush(request);
-
             ClientChannelLRUMap.add(keyString, (SocketChannel) future.channel());
         } catch (InterruptedException e) {
             e.printStackTrace();

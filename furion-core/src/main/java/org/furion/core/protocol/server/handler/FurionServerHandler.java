@@ -66,9 +66,11 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
     protected volatile long lastReadTime = 0;
 
     private FurionServerNetWork netWork;
+
     private FurionFilterRunner runner;
 
     private boolean readingChunks;
+
     private FullHttpRequest fullHttpRequest;
 
     private static final HttpDataFactory factory = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE); //Disk
@@ -199,6 +201,8 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
         if (msg instanceof FullHttpRequest) {
             System.out.println("FullHttpRequest...........");
             this.fullHttpRequest = (FullHttpRequest) msg;
+            String uri = fullHttpRequest.uri();
+
             Long uid = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
             fullHttpRequest.headers().set(REQUEST_ID, uid);
             RequestCommand command = new RequestCommand();
@@ -209,7 +213,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
             ChannelFuture future = channel.writeAndFlush(response.getResponse());
             try {
                 ReferenceCountUtil.release(msg);
-            }catch (IllegalReferenceCountException e){
+            } catch (IllegalReferenceCountException e) {
 
             }
         }
