@@ -5,7 +5,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.springframework.util.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
+
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -31,12 +33,12 @@ public class OkHttpUtil {
      */
     public static String get(String url, Map<String, String> queries, Map<String, String> headerParams) {
         StringBuilder stringBuilder = new StringBuilder(url);
-        if (!CollectionUtils.isEmpty(queries)) {
+        if (!MapUtils.isEmpty(queries)) {
             stringBuilder.append("?");
             queries.forEach((k, v) -> stringBuilder.append(k).append("=").append(v).append("&"));
         }
         Request.Builder builder = new Request.Builder().url(stringBuilder.toString());
-        if (!CollectionUtils.isEmpty(headerParams)) {
+        if (!MapUtils.isEmpty(headerParams)) {
             Headers headers = Headers.of(headerParams).newBuilder().build();
             builder.headers(headers);
         }
@@ -49,7 +51,7 @@ public class OkHttpUtil {
      */
     public static String get(String url, Map<String, String> queries) {
         StringBuilder stringBuilder = new StringBuilder(url);
-        if (!CollectionUtils.isEmpty(queries)) {
+        if (!MapUtils.isEmpty(queries)) {
             stringBuilder.append("?");
             queries.forEach((k, v) -> stringBuilder.append(k).append("=").append(v).append("&"));
         }
@@ -68,11 +70,11 @@ public class OkHttpUtil {
     public static String post(String url, Map<String, String> params, Map<String, String> headerParams) {
         FormBody.Builder formBuilder = new FormBody.Builder();
         // 添加参数
-        if (!CollectionUtils.isEmpty(params)) {
+        if (!MapUtils.isEmpty(params)) {
             params.forEach(formBuilder::add);
         }
         Request.Builder builder = new Request.Builder().url(url).post(formBuilder.build());
-        if (!CollectionUtils.isEmpty(headerParams)) {
+        if (!MapUtils.isEmpty(headerParams)) {
             Headers headers = Headers.of(headerParams).newBuilder().build();
             builder.headers(headers);
         }
@@ -89,7 +91,7 @@ public class OkHttpUtil {
     public static String post(String url, Map<String, String> params) {
         FormBody.Builder builder = new FormBody.Builder();
         // 添加参数
-        if (!CollectionUtils.isEmpty(params)) {
+        if (!MapUtils.isEmpty(params)) {
             params.forEach(builder::add);
         }
         Request request = new Request.Builder().url(url).post(builder.build()).build();
@@ -104,7 +106,7 @@ public class OkHttpUtil {
     public static String postJsonParams(String url, String jsonParams, Map<String, String> headerParams) {
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), jsonParams);
         Request.Builder builder = new Request.Builder().url(url).post(requestBody);
-        if (!CollectionUtils.isEmpty(headerParams)) {
+        if (!MapUtils.isEmpty(headerParams)) {
             Headers headers = Headers.of(headerParams).newBuilder().build();
             builder.headers(headers);
         }

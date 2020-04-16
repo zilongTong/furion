@@ -1,4 +1,4 @@
-package org.furion.core.exception;
+package org.furion.admin;
 
 /**
  * Functional description

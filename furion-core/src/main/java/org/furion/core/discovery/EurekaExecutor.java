@@ -22,4 +22,9 @@ public class EurekaExecutor {
     public void destroy() {
         RegistryFetchTask.getInstance().stop();
     }
+
+    public static void main(String[] args) {
+        System.out.println(1);
+    }
+
 }

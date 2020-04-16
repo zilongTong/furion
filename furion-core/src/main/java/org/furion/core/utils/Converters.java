@@ -1,12 +1,14 @@
 package org.furion.core.utils;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.furion.core.annotation.ApiField;
 import org.furion.core.bean.BaseModel;
 import org.furion.core.constants.Constants;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
+
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -39,7 +41,7 @@ public class Converters {
     }
 
     public static <K, T> Map<K, T> convertMap(Class<T> clazz, Map<K, ?> data, List<String> fields) {
-        if (CollectionUtils.isEmpty(data)) {
+        if (MapUtils.isEmpty(data)) {
             return null;
         }
         Map<K, T> result = new HashMap<K, T>(data.size());

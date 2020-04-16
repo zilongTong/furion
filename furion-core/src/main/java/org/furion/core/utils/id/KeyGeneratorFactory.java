@@ -3,7 +3,7 @@ package org.furion.core.utils.id;
 public class KeyGeneratorFactory {
 
 
-    public static KeyGenerator build(GeneratorEnum type) {
+    public static KeyGenerator gen(GeneratorEnum type) {
         if (GeneratorEnum.HOST.equals(type)) {
             return new HostNameKeyGenerator();
         }

@@ -1,6 +1,8 @@
 package org.furion.core.discovery;
 
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,8 +13,10 @@ import java.util.concurrent.TimeUnit;
  * @author Leo
  * @date 2019-12-19
  */
-@Slf4j
+
 public class RegistryFetchTask {
+
+    private static final Logger log = LoggerFactory.getLogger(RegistryFetchTask.class);
 
     private Thread fetchRegisterThread;
 

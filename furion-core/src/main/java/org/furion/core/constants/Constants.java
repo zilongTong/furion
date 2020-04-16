@@ -1,5 +1,7 @@
 package org.furion.core.constants;
 
+import io.netty.util.AsciiString;
+
 /**
  * 公用常量类。
  *
@@ -30,19 +32,10 @@ public abstract class Constants {
     // request中的key : userId
     public static final String USER_ID = "userId";
 
+    public static final AsciiString REQUEST_ID = AsciiString.cached("requestId");
     // 分隔符
     public static final String SEGMENTATION = ",";
 
-    /** session中存放的 图片验证码key */
-    public static final String IMAGECODE = "IMAGECODE";
 
-    /** session中存放的手机验证码key */
-    public static final String PHONECODE = "PHONECODE";
-
-    /** session中存放的手机验证码 时效性key */
-    public static final String PHONESTATUS = "PHONESTATUS";
-
-    /** session中存放的手机号码key */
-    public static final String PHONE = "PHONE";
 
 }

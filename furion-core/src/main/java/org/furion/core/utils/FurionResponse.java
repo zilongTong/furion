@@ -13,30 +13,34 @@ import io.netty.handler.codec.http.HttpVersion;
  * @author Leo
  * @date 2020-01-03
  */
-public class FurionResponse extends DefaultFullHttpResponse {
+public class FurionResponse {
 
 
-    private String requestId;
+    private DefaultFullHttpResponse response;
 
-    public FurionResponse(HttpVersion version, HttpResponseStatus status) {
-        super(version, status);
+    private Long requestId;
+
+    public FurionResponse() {
     }
 
-    public FurionResponse(HttpVersion version, HttpResponseStatus status, ByteBuf content, String requestId) {
-        super(version, status, content);
+    public FurionResponse(DefaultFullHttpResponse response, Long requestId) {
+        this.response = response;
         this.requestId = requestId;
     }
 
-    public FurionResponse(HttpVersion version, HttpResponseStatus status, ByteBuf content, HttpHeaders headers, HttpHeaders trailingHeaders, String requestId) {
-        super(version, status, content, headers, trailingHeaders);
-        this.requestId = requestId;
+    public DefaultFullHttpResponse getResponse() {
+        return response;
     }
 
-    public String getRequestId() {
+    public void setResponse(DefaultFullHttpResponse response) {
+        this.response = response;
+    }
+
+    public Long getRequestId() {
         return requestId;
     }
 
-    public void setRequestId(String requestId) {
+    public void setRequestId(Long requestId) {
         this.requestId = requestId;
     }
 }
