@@ -52,6 +52,22 @@ public class FurionClientChannelInitializer extends ChannelInitializer<SocketCha
 
         ChannelPipeline pipeline = socketChannel.pipeline();
 
+        /**
+         * IdleStateHandler构造器
+         *
+         * readerIdleTime读空闲超时时间设定，如果channelRead()方法超过readerIdleTime时间未被调用则会触发超时事件调用userEventTrigger()方法；
+         *
+         * writerIdleTime写空闲超时时间设定，如果write()方法超过writerIdleTime时间未被调用则会触发超时事件调用userEventTrigger()方法；
+         *
+         * allIdleTime所有类型的空闲超时时间设定，包括读空闲和写空闲；
+         *
+         * unit时间单位，包括时分秒等
+         *
+         * protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
+         *     ctx.fireUserEventTriggered(evt);
+         * }
+         *
+         */
         pipeline.addLast("idleStateHandler", new IdleStateHandler(60000L, 0, 0, TimeUnit.MILLISECONDS));
 
         //处理http服务的关键handler

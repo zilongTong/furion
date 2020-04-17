@@ -66,38 +66,14 @@ public interface FurionHttpServerBootstrap {
             boolean authenticateSslClients);
 
 
-
     FurionHttpServerBootstrap withUseDnsSec(
             boolean useDnsSec);
 
-    /**
-     * <p>
-     * Specify whether or not to run this proxy as a transparent proxy.
-     * </p>
-     *
-     * <p>
-     * Default = false
-     * </p>
-     *
-     * @param transparent
-     * @return
-     */
+
     FurionHttpServerBootstrap withTransparent(
             boolean transparent);
 
-    /**
-     * <p>
-     * Specify the timeout after which to disconnect idle connections, in
-     * seconds.
-     * </p>
-     *
-     * <p>
-     * Default = 70
-     * </p>
-     *
-     * @param idleConnectionTimeout
-     * @return
-     */
+
     FurionHttpServerBootstrap withIdleConnectionTimeout(
             int idleConnectionTimeout);
 
@@ -108,11 +84,7 @@ public interface FurionHttpServerBootstrap {
 
     FurionHttpServerBootstrap withThrottling(long readThrottleBytesPerSecond, long writeThrottleBytesPerSecond);
 
-    /**
-     * All outgoing-communication of the proxy-instance is goin' to be routed via the given network-interface
-     *
-     * @param inetSocketAddress to be used for outgoing communication
-     */
+
     FurionHttpServerBootstrap withNetworkInterface(InetSocketAddress inetSocketAddress);
 
     FurionHttpServerBootstrap withMaxInitialLineLength(int maxInitialLineLength);
@@ -127,20 +99,9 @@ public interface FurionHttpServerBootstrap {
 
     FurionHttpServerBootstrap withGatewayAlias(String alias);
 
-    /**
-     * <p>
-     * Build and starts the server.
-     * </p>
-     *
-     * @return the newly built and started server
-     */
+
     FurionServerNetWork start();
 
-    /**
-     * Set the configuration parameters for the proxy's thread pools.
-     *
-     * @param configuration thread pool configuration
-     * @return proxy server bootstrap for chaining
-     */
+
     FurionHttpServerBootstrap withThreadPoolConfiguration(ThreadPoolConfiguration configuration);
 }

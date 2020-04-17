@@ -104,7 +104,10 @@ public class FurionServerChannelInitializer extends ChannelInitializer<SocketCha
 
 //        pipeline.addLast("bytesReadMonitor", bytesReadMonitor);
 //        pipeline.addLast("bytesWrittenMonitor", bytesWrittenMonitor);
-
+        pipeline.addLast(
+                "idle",
+                new IdleStateHandler(0, 0, httpServer
+                        .getIdleConnectionTimeout()));
         pipeline.addLast("encoder", new HttpResponseEncoder());
         // We want to allow longer request lines, headers, and chunks
         // respectively.
@@ -124,10 +127,6 @@ public class FurionServerChannelInitializer extends ChannelInitializer<SocketCha
 //        pipeline.addLast("responseWrittenMonitor", responseWrittenMonitor);
         pipeline.addLast("aggregator", new HttpObjectAggregator(1048576));
         pipeline.addLast("deflater", new HttpContentCompressor());
-        pipeline.addLast(
-                "idle",
-                new IdleStateHandler(0, 0, httpServer
-                        .getIdleConnectionTimeout()));
 
         pipeline.addLast("handler", new FurionServerHandler(httpServer));
 

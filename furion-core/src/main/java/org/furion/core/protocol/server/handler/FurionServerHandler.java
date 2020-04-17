@@ -1,17 +1,10 @@
 package org.furion.core.protocol.server.handler;
 
-import com.sun.tools.internal.ws.wsdl.document.soap.SOAPUse;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.EndOfDataDecoderException;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.ErrorDataDecoderException;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.timeout.IdleStateEvent;
-import io.netty.util.CharsetUtil;
 import io.netty.util.IllegalReferenceCountException;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
@@ -19,11 +12,13 @@ import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
 import org.furion.core.bean.eureka.Server;
 import org.furion.core.context.RequestCommand;
+import org.furion.core.context.RequestLRUContext;
 import org.furion.core.enumeration.ProtocolType;
 import org.furion.core.filter.FurionFilterRunner;
 import org.furion.core.protocol.client.http.HttpNetFactory;
 import org.furion.core.protocol.client.http.HttpNetWork;
 import org.furion.core.protocol.server.FurionServerNetWork;
+import org.furion.core.utils.FurionRequest;
 import org.furion.core.utils.FurionResponse;
 import org.furion.core.utils.id.GeneratorEnum;
 import org.furion.core.utils.id.KeyGeneratorFactory;
@@ -31,17 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.furion.core.enumeration.ConnectionState;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static io.netty.buffer.Unpooled.copiedBuffer;
-import static io.netty.handler.codec.http.HttpHeaders.Names.*;
 
-import static io.netty.handler.codec.http.HttpHeaderNames.COOKIE;
 import static org.furion.core.constants.Constants.REQUEST_ID;
 
 import static org.furion.core.enumeration.ConnectionState.DISCONNECTED;
@@ -200,10 +186,18 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
         System.out.println("read...........");
         if (msg instanceof FullHttpRequest) {
             System.out.println("FullHttpRequest...........");
-            this.fullHttpRequest = (FullHttpRequest) msg;
-            String uri = fullHttpRequest.uri();
-
             Long uid = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
+            this.fullHttpRequest = (FullHttpRequest) msg;
+
+            String uri = fullHttpRequest.uri();
+            String u = uri.replace("/api", "");
+
+
+            FurionRequest request = new FurionRequest();
+            request.setRequestId(uid);
+            request.setRequest(fullHttpRequest);
+            fullHttpRequest.setUri(u);
+            RequestLRUContext.add(uid, request);
             fullHttpRequest.headers().set(REQUEST_ID, uid);
             RequestCommand command = new RequestCommand();
             command.setRequestId(uid);

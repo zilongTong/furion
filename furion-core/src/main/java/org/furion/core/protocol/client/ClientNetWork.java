@@ -3,26 +3,19 @@ package org.furion.core.protocol.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
-import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.traffic.GlobalTrafficShapingHandler;
-import io.netty.util.concurrent.GlobalEventExecutor;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.furion.core.bean.eureka.Server;
-import org.furion.core.context.ClientChannelLRUMap;
-import org.furion.core.context.CountDownLatchLRUMap;
+import org.furion.core.context.ClientChannelLRUContext;
+import org.furion.core.context.CountDownLatchLRUContext;
 import org.furion.core.context.RequestCommand;
-import org.furion.core.context.ResponseLRUMap;
+import org.furion.core.context.RequestLRUContext;
+import org.furion.core.context.ResponseLRUContext;
 
 import org.furion.core.enumeration.ProtocolType;
-import org.furion.core.protocol.client.handler.FurionClientHandler;
 import org.furion.core.protocol.client.http.HttpNetFactory;
 import org.furion.core.protocol.client.http.HttpNetWork;
 import org.furion.core.utils.FurionResponse;
-import org.furion.core.utils.FurionRequest;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -37,14 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.furion.core.utils.id.GeneratorEnum;
 import org.furion.core.utils.id.KeyGeneratorFactory;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Functional description
@@ -86,7 +75,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 //            RpcRequest request=new RpcRequest();
 //            request.setBaseMsg(new PingMsg());
 //            future.channel().writeAndFlush(request);
-            ClientChannelLRUMap.add(keyString, (SocketChannel) future.channel());
+            ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -97,7 +86,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 
         String key = host.concat(":").concat(String.valueOf(port));
         while (true) {
-            Channel channel = ClientChannelLRUMap.get(key);
+            Channel channel = ClientChannelLRUContext.get(key);
             if (channel != null) {
                 channel.writeAndFlush(requestCommand.getRequest());
                 break;
@@ -105,16 +94,25 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
             connect();
         }
         CountDownLatch waitLatch = new CountDownLatch(1);
-        CountDownLatchLRUMap.add(requestCommand.getRequestId(), waitLatch);
+        CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);
-            FurionResponse response = ResponseLRUMap.get(requestCommand.getRequestId());
+            FurionResponse response = ResponseLRUContext.get(requestCommand.getRequestId());
+
             System.out.println(response);
             return response;
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            release(requestCommand.getRequestId());
         }
         return null;
+    }
+
+    void release(Long id) {
+        CountDownLatchLRUContext.remove(id);
+        ResponseLRUContext.remove(id);
+        RequestLRUContext.remove(id);
     }
 
     public static void main(String[] args) {

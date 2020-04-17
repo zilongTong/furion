@@ -8,7 +8,7 @@ import org.furion.core.utils.FurionResponse;
  * @author Leo
  * @date 2019-12-31
  */
-public class ResponseLRUMap {
+public class ResponseLRUContext {
 
     private static ConcurrentLRUHashMap<Long, FurionResponse> furionResponseMap = new ConcurrentLRUHashMap<Long, FurionResponse>(10240);
 
@@ -20,13 +20,12 @@ public class ResponseLRUMap {
         return furionResponseMap.get(requestId);
     }
 
-    public static void remove(FurionResponse furionResponse) {
+    public static void remove(Long requestId) {
         if (furionResponseMap != null && furionResponseMap.size() > 0) {
-            furionResponseMap.entrySet.stream().forEach(e -> {
-                if (e.getValue().equals(furionResponse)) {
-                    furionResponseMap.remove(e.getKey());
-                }
-            });
+
+            furionResponseMap.remove(requestId);
+
+
         }
     }
 }

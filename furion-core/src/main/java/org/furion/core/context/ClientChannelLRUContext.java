@@ -11,7 +11,7 @@ import java.util.Map;
  * @author Leo
  * @date 2019-12-31
  */
-public class ClientChannelLRUMap {
+public class ClientChannelLRUContext {
 
     private static ConcurrentLRUHashMap<String, SocketChannel> socketChannelMap = new ConcurrentLRUHashMap<String, SocketChannel>(1024);
 

@@ -8,7 +8,7 @@ import java.util.concurrent.CountDownLatch;
  * @author Leo
  * @date 2019-12-31
  */
-public class CountDownLatchLRUMap {
+public class CountDownLatchLRUContext {
 
     private static ConcurrentLRUHashMap<Long, CountDownLatch> countDownLatchMap = new ConcurrentLRUHashMap<Long, CountDownLatch>(10240);
 
@@ -20,13 +20,11 @@ public class CountDownLatchLRUMap {
         return countDownLatchMap.get(responseId);
     }
 
-    public static void remove(CountDownLatch countDownLatch) {
+    public static void remove(Long responseId) {
         if (countDownLatchMap != null && countDownLatchMap.size() > 0) {
-            countDownLatchMap.entrySet.stream().forEach(e -> {
-                if (e.getValue().equals(countDownLatch)) {
-                    countDownLatchMap.remove(e.getKey());
-                }
-            });
+
+            countDownLatchMap.remove(responseId);
+
         }
     }
 }

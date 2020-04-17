@@ -3,26 +3,19 @@ package org.furion.core.protocol.client.handler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpContent;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpObject;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
@@ -32,14 +25,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.furion.core.bean.PingRequest;
 import org.furion.core.bean.eureka.Server;
-import org.furion.core.context.ClientChannelLRUMap;
-import org.furion.core.context.CountDownLatchLRUMap;
-import org.furion.core.context.ResponseLRUMap;
-import org.furion.core.enumeration.ContentType;
+import org.furion.core.context.ClientChannelLRUContext;
+import org.furion.core.context.CountDownLatchLRUContext;
+import org.furion.core.context.ResponseLRUContext;
 import org.furion.core.protocol.client.FurionClientChannelInitializer;
 import org.furion.core.utils.FurionResponse;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
 import org.slf4j.Logger;
@@ -50,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.netty.buffer.Unpooled.copiedBuffer;
-import static io.netty.handler.codec.http.HttpHeaders.Names.CONNECTION;
 import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static org.furion.core.constants.Constants.REQUEST_ID;
 
@@ -160,8 +150,8 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buf);
         response.headers().set(CONTENT_TYPE, contentType);
         result.setResponse(response);
-        ResponseLRUMap.add(result.getRequestId(), result);
-        CountDownLatchLRUMap.get(result.getRequestId()).countDown();
+        ResponseLRUContext.add(result.getRequestId(), result);
+        CountDownLatchLRUContext.get(result.getRequestId()).countDown();
         // this.response = rpcResponse;
 //        ResponseLRUMap.add(result.getRequestId(), result);
 //        CountDownLatchLRUMap.get(result.getRequestId()).countDown();
@@ -174,7 +164,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("channelInactive.....................");
         System.out.println(System.currentTimeMillis());
-        ClientChannelLRUMap.remove((SocketChannel) ctx.channel());
+        ClientChannelLRUContext.remove((SocketChannel) ctx.channel());
         System.out.println("链接关闭");
         if (reconnect) {
             System.out.println("链接关闭，将进行重连");
@@ -204,7 +194,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error("client caught exception", cause);
         System.out.println("exceptionCaught.....................");
-        ClientChannelLRUMap.remove((SocketChannel) ctx.channel());
+        ClientChannelLRUContext.remove((SocketChannel) ctx.channel());
         ctx.close();
     }
 
@@ -240,7 +230,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
                     } else {
                         System.out.println("重连成功");
                         String keyString = host.concat(":").concat(String.valueOf(port));
-                        ClientChannelLRUMap.add(keyString, (SocketChannel) f.channel());
+                        ClientChannelLRUContext.add(keyString, (SocketChannel) f.channel());
                     }
                 }
             });
