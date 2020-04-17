@@ -11,7 +11,7 @@
 
     <artifactId>furion-core</artifactId>
 
-
+    <name>高性能 reactor 网关</name>
     <dependencies>
 
         <dependency>

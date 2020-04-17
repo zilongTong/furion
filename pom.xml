@@ -33,6 +33,7 @@
         <module>furion-sample</module>
         <module>furion-monitor</module>
         <module>furion-gateway-starter</module>
+        <module>furion-registry</module>
     </modules>
 
     <build>
