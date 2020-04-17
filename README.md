@@ -1,1 +1,1 @@
-﻿react網関  加  基于 Raft 算法，RPC协议交互的注册中心
+﻿react網関 + 基于Raft选举算法，netty RPC 协议数据同步的注册中心
