@@ -26,8 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.furion.core.enumeration.ConnectionState;
 
-import static io.netty.buffer.Unpooled.copiedBuffer;
-
 import static org.furion.core.constants.Constants.REQUEST_ID;
 
 import static org.furion.core.enumeration.ConnectionState.DISCONNECTED;
@@ -135,6 +133,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
         if (channel == null) {
             return null;
         } else {
+
             final Promise<Void> promise = channel.newPromise();
             writeToChannel(Unpooled.EMPTY_BUFFER).addListener(
                     new GenericFutureListener<Future<? super Void>>() {
@@ -189,8 +188,11 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
             Long uid = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
             this.fullHttpRequest = (FullHttpRequest) msg;
 
+
+
+            //TODO
             String uri = fullHttpRequest.uri();
-            String u = uri.replace("/api", "");
+            String u = uri.replace("/spi", "");
 
 
             FurionRequest request = new FurionRequest();

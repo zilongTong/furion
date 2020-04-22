@@ -32,12 +32,17 @@ public class FurionGatewayContext {
     }
 
     public void refresh() {
-
+        //TODO
     }
 
     void lodePropsFromFurionAdmin() {
         //TODO
         lodePropsFromLocalFile("");
+    }
+
+
+    public static void registryFilter() {
+        //TODO
     }
 
     void lodePropsFromLocalFile(String path) {

@@ -39,13 +39,13 @@ public class FurionServerNetWork implements FurionHttpServer {
      * traffic
      */
 //    public static final long TRAFFIC_SHAPING_CHECK_INTERVAL_MS = 250L;
+    private volatile GlobalTrafficShapingHandler globalTrafficShapingHandler;
 
     public static final int MAX_INITIAL_LINE_LENGTH_DEFAULT = 8192;
     public static final int MAX_HEADER_SIZE_DEFAULT = 8192 * 2;
     public static final int MAX_CHUNK_SIZE_DEFAULT = 8192 * 2;
 
 
-    private volatile GlobalTrafficShapingHandler globalTrafficShapingHandler;
     private int maxInitialLineLength;
     private int maxHeaderSize;
     private int maxChunkSize;

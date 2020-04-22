@@ -12,6 +12,7 @@
     <artifactId>furion-core</artifactId>
 
     <name>高性能 reactor 网关</name>
+    
     <dependencies>
 
         <dependency>
@@ -19,16 +20,19 @@
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
         </dependency>
+
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>${okhttp.version}</version>
         </dependency>
+
         <!--   <dependency>
                <groupId>com.sun.jersey</groupId>
                <artifactId>jersey-client</artifactId>
                <version>1.19.1</version>
            </dependency>-->
+
         <!-- lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -60,6 +64,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <!--jackson-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

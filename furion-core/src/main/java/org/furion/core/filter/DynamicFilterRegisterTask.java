@@ -26,9 +26,9 @@ public class DynamicFilterRegisterTask {
         filterScanThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!isStop) {
+                while (!isStop || !filterScanThread.isInterrupted()) {
                     try {
-
+                        //TODO
                     } catch (Exception e) {
                         log.error("filterScanThread  error", e);
                     }
@@ -38,8 +38,6 @@ public class DynamicFilterRegisterTask {
                         log.info("filterScanThread InterruptedException", e);
                     }
                 }
-
-
             }
         });
         filterScanThread.setDaemon(true);

@@ -6,16 +6,13 @@ import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
-
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
-import io.netty.util.AsciiString;
 import org.furion.core.utils.id.GeneratorEnum;
 import org.furion.core.utils.id.KeyGeneratorFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import static org.furion.core.constants.Constants.REQUEST_ID;
 

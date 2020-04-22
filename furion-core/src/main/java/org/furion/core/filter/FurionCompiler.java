@@ -4,9 +4,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
-
 import java.io.IOException;
-
 import java.util.Arrays;
 
 public class FurionCompiler {
@@ -32,6 +30,7 @@ public class FurionCompiler {
                     Iterable iterable = manage.getJavaFileObjects(temp);
                     JavaCompiler.CompilationTask task = compiler.getTask(null, manage, null, null, null, iterable);
                     task.call();
+
                     try {
                         manage.close();
                     } catch (IOException e) {
