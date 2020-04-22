@@ -10,7 +10,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
     public FurionFilter() {
     }
 
-    public abstract String filterType();
+    public abstract FilterType filterType();
 
     public abstract int filterOrder();
 
