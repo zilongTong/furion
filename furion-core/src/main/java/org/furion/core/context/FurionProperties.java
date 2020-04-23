@@ -1,5 +1,8 @@
 package org.furion.core.context;
 
+import org.furion.core.context.properties.BasePropertiesContainer;
+import org.furion.core.context.properties.PropertyValueChangeEvent;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -8,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public class FurionProperties {
+public class FurionProperties extends BasePropertiesContainer {
 
     public static final List<String> SECURITY_HEADERS = Arrays.asList("Pragma", "Cache-Control", "X-Frame-Options", "X-Content-Type-Options", "X-XSS-Protection", "Expires");
     private String prefix = "furion";
@@ -186,8 +189,14 @@ public class FurionProperties {
     }
 
 
+    @Override
     public String toString() {
         return "FurionProperties{" + "prefix='" + this.prefix + "', " + "stripPrefix=" + this.stripPrefix + ", " + "retryable=" + this.retryable + ", " + "routes=" + this.routes + ", " + "addProxyHeaders=" + this.addProxyHeaders + ", " + "addHostHeader=" + this.addHostHeader + ", " + "ignoredServices=" + this.ignoredServices + ", " + "ignoredPatterns=" + this.ignoredPatterns + ", " + "ignoredHeaders=" + this.ignoredHeaders + ", " + "ignoreSecurityHeaders=" + this.ignoreSecurityHeaders + ", " + "forceOriginalQueryStringEncoding=" + this.forceOriginalQueryStringEncoding + ", " + "', " + "ignoreLocalService=" + this.ignoreLocalService + ", " + "traceRequestBody=" + this.traceRequestBody + ", " + "removeSemicolonContent=" + this.removeSemicolonContent + ", " + "sensitiveHeaders=" + this.sensitiveHeaders + ", " + "sslHostnameValidationEnabled=" + this.sslHostnameValidationEnabled + "setContentLength=" + this.setContentLength + ", " + "includeDebugHeader=" + this.includeDebugHeader + ", " + "initialStreamBufferSize=" + this.initialStreamBufferSize + ", " + "}";
+    }
+
+    @Override
+    public void init(List<PropertyValueChangeEvent> refreshDataList) {
+
     }
 
     public class FurionRoute {
