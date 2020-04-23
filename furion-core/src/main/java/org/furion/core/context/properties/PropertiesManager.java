@@ -11,10 +11,8 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 负责从数据源读取所有 配置项的值，包括但不限于：
- * 环境变量、本地配置文件、网络推送等
- * <p>
- * 负责管理所有的ProperteisContainer,当有相应key更新时
+ * @author wplin
+ * 2020年04月23日11:36:15
  */
 @Slf4j
 public final class PropertiesManager implements IPropertiesManager {
