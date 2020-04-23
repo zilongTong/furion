@@ -1,25 +1,20 @@
 package org.furion.core.context;
 
-import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.filter.FilterType;
 import org.furion.core.filter.FurionFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 public class FurionGatewayContext implements GatewayContext {
-    private static final String PROPERTIES_PATH = "";
+
     private static final Logger LOG = LoggerFactory.getLogger(FurionGatewayContext.class);
 
     private Set<FurionFilter> preFilters = new TreeSet<>();
     private Set<FurionFilter> postFilters = new TreeSet<>();
-    /**
-     * 所有配置项管理类
-     */
-    private static final PropertiesManager propertiesManager = new PropertiesManager();
+
 
     public FurionGatewayContext() {
         refresh();
