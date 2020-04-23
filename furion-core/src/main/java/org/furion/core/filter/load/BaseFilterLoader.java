@@ -1,9 +1,9 @@
 package org.furion.core.filter.load;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.furion.core.bean.ClassResourceContainer;
 import org.furion.core.context.FurionGatewayContext;
+import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.filter.FurionFilter;
 import org.furion.core.utils.ClassLoaderUtil;
 
@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class BaseFilterLoader implements IFilterLoader {
 
     private static ConcurrentHashMap<String, Date> loadedClass = new ConcurrentHashMap<>();
+
+    protected PropertiesManager propertiesManager = PropertiesManager.getInstance();
 
 
     @Override

@@ -18,7 +18,7 @@ public class LocalFileFilterLoader extends BaseFilterLoader {
     @Override
     List<ClassResourceContainer> getResource(FurionGatewayContext context) {
         List<ClassResourceContainer> list = Lists.newArrayList();
-        String filterFilePath = fixPath(context);
+        String filterFilePath = fixPath();
         if (StringUtils.isBlank(filterFilePath)) {
             return list;
         }
@@ -41,9 +41,9 @@ public class LocalFileFilterLoader extends BaseFilterLoader {
      * 对路径做检查修复
      * 返回 绝对路径 /path/to/file/
      */
-    private String fixPath(FurionGatewayContext context) {
+    private String fixPath() {
         //filter class文件地址
-        return context.getPropertyValueByKey("filter.filePath", String.class);
+        return propertiesManager.getPropertyValue("filter.filePath", String.class);
     }
 
 }
