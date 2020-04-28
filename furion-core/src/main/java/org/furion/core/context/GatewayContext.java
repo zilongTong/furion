@@ -8,7 +8,7 @@ import java.util.Set;
 public interface GatewayContext {
 
 
-    Set<FurionFilter> getFilterSetByType(FilterType filterType);
+//    Set<FurionFilter> getFilterSetByType(FilterType filterType);
 
     void addFilter(FurionFilter filter);
 

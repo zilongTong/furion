@@ -16,8 +16,6 @@ public class FurionGatewayContext implements GatewayContext {
     private FurionProperties FurionProperties;
 
     private static FurionFilterRegistry registry;
-    private Set<FurionFilter> preFilters = new TreeSet<>();
-    private Set<FurionFilter> postFilters = new TreeSet<>();
 
 
     public static FurionFilterRegistry getRegistry() {
@@ -44,26 +42,19 @@ public class FurionGatewayContext implements GatewayContext {
     }
 
 
-    @Override
-    public Set<FurionFilter> getFilterSetByType(FilterType filterType) {
-        if (FilterType.POST == filterType) {
-            return postFilters;
-        } else if (FilterType.PRE == filterType) {
-            return preFilters;
-        }
-        throw new RuntimeException("invalid filterType:" + filterType);
-
-    }
+//    @Override
+//    public Set<FurionFilter> getFilterSetByType(FilterType filterType) {
+//        if (FilterType.POST == filterType) {
+//            return postFilters;
+//        } else if (FilterType.PRE == filterType) {
+//            return preFilters;
+//        }
+//        throw new RuntimeException("invalid filterType:" + filterType);
+//
+//    }
 
     @Override
     public void addFilter(FurionFilter filter) {
-
-        if (filter != null) {
-            if (FilterType.PRE == filter.filterType()) {
-                preFilters.add(filter);
-            } else if (FilterType.POST == filter.filterType()) {
-                postFilters.add(filter);
-            }
-        }
+        registry.registerFilter(filter);
     }
 }

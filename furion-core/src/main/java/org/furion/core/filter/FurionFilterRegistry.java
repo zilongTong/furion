@@ -23,7 +23,7 @@ public class FurionFilterRegistry {
         this.routeFilter = headFilter;
     }
 
-    void registerFilter(FurionFilter filter) {
+    public void registerFilter(FurionFilter filter) {
         if (filter == null) {
             throw new UnknownFurionFilterException();
         }
