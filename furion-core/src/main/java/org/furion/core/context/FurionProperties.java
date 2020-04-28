@@ -194,6 +194,10 @@ public class FurionProperties {
         private String id;
         private String path;
         private String serviceId;
+
+        //go python
+        private List<String> ipList;
+
         private String url;
         private boolean stripPrefix = true;
         private Boolean retryable;

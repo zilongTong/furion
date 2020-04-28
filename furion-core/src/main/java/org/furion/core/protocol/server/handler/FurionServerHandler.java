@@ -187,26 +187,13 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
             System.out.println("FullHttpRequest...........");
             Long uid = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
             this.fullHttpRequest = (FullHttpRequest) msg;
-
-
-
-            //TODO
-            String uri = fullHttpRequest.uri();
-            String u = uri.replace("/spi", "");
-
-
             FurionRequest request = new FurionRequest();
             request.setRequestId(uid);
             request.setRequest(fullHttpRequest);
-            fullHttpRequest.setUri(u);
-            RequestLRUContext.add(uid, request);
             fullHttpRequest.headers().set(REQUEST_ID, uid);
-            RequestCommand command = new RequestCommand();
-            command.setRequestId(uid);
-            command.setRequest(fullHttpRequest);
-            HttpNetWork httpNetWork = HttpNetFactory.fetchProcessor(ProtocolType.NETTY, new Server("127.0.0.1", 8080));
-            FurionResponse response = (FurionResponse) httpNetWork.send(command);
-            ChannelFuture future = channel.writeAndFlush(response.getResponse());
+            RequestLRUContext.add(uid, request);
+            runner = new FurionFilterRunner(uid, channel);
+            runner.filter();
             try {
                 ReferenceCountUtil.release(msg);
             } catch (IllegalReferenceCountException e) {

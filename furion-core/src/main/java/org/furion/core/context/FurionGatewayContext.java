@@ -1,6 +1,7 @@
 package org.furion.core.context;
 
 import org.furion.core.filter.FurionFilter;
+import org.furion.core.filter.FurionFilterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,10 +18,18 @@ public class FurionGatewayContext {
     private static final Logger LOG = LoggerFactory.getLogger(FurionGatewayContext.class);
 
     private FurionProperties FurionProperties;
-    private Set<FurionFilter> preFilters = new TreeSet<>();
-    private Set<FurionFilter> postFilters = new TreeSet<>();
+
+    private static FurionFilterRegistry registry;
 
     private static final Properties properties = new Properties();
+
+    public static FurionFilterRegistry getRegistry() {
+        return registry;
+    }
+
+    public static void setRegistry(FurionFilterRegistry registry) {
+        FurionGatewayContext.registry = registry;
+    }
 
     public FurionGatewayContext() {
         lodePropsFromLocalFile(FurionGatewayContext.class.getResource("").getPath());
@@ -32,7 +41,7 @@ public class FurionGatewayContext {
     }
 
     public void refresh() {
-        //TODO
+        //
     }
 
     void lodePropsFromFurionAdmin() {

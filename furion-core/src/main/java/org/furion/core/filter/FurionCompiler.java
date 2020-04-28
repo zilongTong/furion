@@ -19,6 +19,7 @@ public class FurionCompiler {
     public void dynamicFilterCompile(FilterClassLoader classLoader) {
         try {
             File file = new File(filePath);
+
             if (file.isDirectory()) {
                 File[] fs = file.listFiles();
                 Arrays.stream(fs).forEach(f -> {
@@ -41,7 +42,6 @@ public class FurionCompiler {
                     } catch (ClassNotFoundException e) {
                         e.printStackTrace();
                     }
-
                 });
             }
         } catch (Exception e) {
