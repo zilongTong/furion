@@ -1,5 +1,7 @@
 package org.furion.core.filter;
 
+import org.furion.core.filter.load.LocalFileFilterLoader;
+
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
@@ -16,14 +18,13 @@ public class FurionCompiler {
         this.filePath = filePath;
     }
 
-    public void dynamicFilterCompile(FilterClassLoader classLoader) {
+    public void dynamicFilterCompile(LocalFileFilterLoader classLoader) {
         try {
             File file = new File(filePath);
 
             if (file.isDirectory()) {
                 File[] fs = file.listFiles();
                 Arrays.stream(fs).forEach(f -> {
-                    f.getName();
                     File temp = new File(filePath + f.getName());
                     //.java文件编译成.class文件
                     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -37,11 +38,18 @@ public class FurionCompiler {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    try {
-                        Class dynamicFilter = classLoader.findClass(f.getName());
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Class dynamicFilter = classLoader.findClass(f.getName());
+//                    } catch (ClassNotFoundException e) {
+//                        e.printStackTrace();
+//                    }
+//                    try {
+//                        Class dynamicFilter = classLoader.findClass(f.getName());
+//
+//                    } catch (ClassNotFoundException e) {
+//                        e.printStackTrace();
+//                    }
+
                 });
             }
         } catch (Exception e) {

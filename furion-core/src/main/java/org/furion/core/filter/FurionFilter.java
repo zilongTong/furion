@@ -11,6 +11,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
     public FurionFilter() {
     }
 
+
     private transient boolean whetherWriteAndFlush;
 
     private transient Long exclusiveOwnerRequest;
@@ -24,8 +25,9 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
         //ReferenceCountUtil.release(o);
     }
 
-    public abstract String filterType(
-    );
+
+    public abstract String filterType();
+
 
     public abstract int filterOrder();
 
