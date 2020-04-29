@@ -2,7 +2,7 @@ package org.furion.core.context.properties;
 
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.K;
+import org.furion.core.enumeration.PropertiesType;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -103,7 +103,27 @@ public final class PropertiesManager implements IPropertiesManager {
      * @param properties
      */
     @Override
-    public void refresh(Properties properties) {
+    public void refresh(PropertiesType propertiesType, Properties properties) {
+
+        //TODO 更新对应的properties
+        switch (propertiesType) {
+            //本地
+            case LOCAL:
+                handlePropertiesRefresh(localProperties, properties);
+                break;
+            case NET:
+                handlePropertiesRefresh(netProperties, properties);
+                break;
+            case SYSTEM:
+                handlePropertiesRefresh(systemProperties, properties);
+                break;
+            default:
+
+        }
+    }
+
+    private void handlePropertiesRefresh(Properties old, Properties n) {
+
         /*
             比对key-value ,计算出更新项、事件。
          */
@@ -116,6 +136,7 @@ public final class PropertiesManager implements IPropertiesManager {
             v.refresh(list);
         });
     }
+
 
     /**
      * 取值。按照优先级，遍历读取，优先级原则：

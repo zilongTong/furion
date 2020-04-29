@@ -1,5 +1,7 @@
 package org.furion.core.context.properties;
 
+import org.furion.core.enumeration.PropertiesType;
+
 import java.util.List;
 import java.util.Properties;
 
@@ -15,7 +17,7 @@ import java.util.Properties;
  */
 public interface IPropertiesManager {
 
-    void refresh(Properties properties);
+    void refresh(PropertiesType propertiesType,Properties properties);
 
     <V> V getPropertyValue(String key, Class<V> tClass);
 
