@@ -1,5 +1,8 @@
 package org.furion.core.context.properties;
 
+import java.util.List;
+import java.util.Properties;
+
 /**
  * 所有配置项管理 顶级类。负责：
  * 1、管理 IPropertiesContainer
@@ -10,14 +13,18 @@ package org.furion.core.context.properties;
  * @author wplin
  * 2020年04月23日11:36:36
  */
-public interface IPropertiesManager extends IPropertiesContainer {
+public interface IPropertiesManager {
+
+    void refresh(Properties properties);
+
+    <V> V getPropertyValue(String key, Class<V> tClass);
 
     void register(IPropertiesContainer container);
 
     /**
      * 按照Class获取具体的Properties类。
      */
-    <T> T getProperties(Class<? extends IPropertiesContainer> c);
+    <T> T getPropertiesContainer(Class<? extends IPropertiesContainer> c);
 
 
 }

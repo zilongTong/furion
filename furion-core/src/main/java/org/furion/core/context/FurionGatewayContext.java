@@ -1,5 +1,6 @@
 package org.furion.core.context;
 
+import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.filter.FilterType;
 import org.furion.core.filter.FurionFilter;
 import org.furion.core.filter.FurionFilterRegistry;
@@ -12,8 +13,8 @@ import java.util.TreeSet;
 public class FurionGatewayContext implements GatewayContext {
 
     private static final Logger LOG = LoggerFactory.getLogger(FurionGatewayContext.class);
-
-    private FurionProperties FurionProperties;
+    private PropertiesManager propertiesManager;
+    private FurionProperties furionProperties;
 
     private static FurionFilterRegistry registry;
 
@@ -27,6 +28,9 @@ public class FurionGatewayContext implements GatewayContext {
     }
 
     public FurionGatewayContext() {
+        propertiesManager = PropertiesManager.getInstance();
+        furionProperties = new FurionProperties();
+        init();
         refresh();
     }
 
@@ -34,11 +38,16 @@ public class FurionGatewayContext implements GatewayContext {
         System.out.println(FurionGatewayContext.class.getResource("/META-INF").getPath());
     }
 
+    private void init() {
+
+    }
+
     /**
      * 加载Filter
      */
     public void refresh() {
-        //
+
+
     }
 
 
