@@ -17,6 +17,9 @@ import java.util.Properties;
  */
 public interface IPropertiesManager {
 
+    /**
+     * 接收新的Properties值：网络推送、本地扫描 等
+     */
     void refresh(PropertiesType propertiesType,Properties properties);
 
     <V> V getPropertyValue(String key, Class<V> tClass);
