@@ -123,7 +123,16 @@ public final class PropertiesManager implements IPropertiesManager {
      */
     @Override
     public <V> V getPropertyValue(String key, Class<V> tClass) {
-        return null;
+        String value = localProperties.getProperty(key);
+
+        if (systemProperties.containsKey(key)) {
+            value = systemProperties.getProperty(key);
+        }
+        if (netProperties.containsKey(key)) {
+            value = netProperties.getProperty(key);
+        }
+        //TODO 类型转换
+        return (V) value;
     }
 
 
