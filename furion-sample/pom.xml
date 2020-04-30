@@ -10,6 +10,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>furion-sample</artifactId>
+    <packaging>pom</packaging>
 
 
+    <dependencies>
+        <dependency>
+            <groupId>org.furion</groupId>
+            <artifactId>furion-core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -1,6 +1,6 @@
 package org.furion.core.enumeration;
 
-public enum PropertiesType {
+public enum PropertiesSource {
     SYSTEM,
     LOCAL,
      NET

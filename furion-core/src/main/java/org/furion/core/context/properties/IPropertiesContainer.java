@@ -10,12 +10,7 @@ public interface IPropertiesContainer {
     /**
      * 接收 具体的 配置项更新事件，更新自身。
      */
-    default void refresh(List<PropertyValueChangeEvent> refreshDataList) {
+    default void refresh(List<IPropertyValueChangeEvent> refreshDataList) {
     }
-
-    void register(PropertiesManager propertiesManager);
-
-    <V> V getPropertyValue(String key, Class<V> tClass);
-
 
 }

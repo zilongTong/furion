@@ -1,7 +1,7 @@
 package org.furion.core.context;
 
 import org.furion.core.context.properties.BasePropertiesContainer;
-import org.furion.core.context.properties.PropertyValueChangeEvent;
+import org.furion.core.context.properties.IPropertyValueChangeEvent;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -196,14 +196,11 @@ public class FurionProperties extends BasePropertiesContainer {
 
 
     @Override
-    public void refresh(List<PropertyValueChangeEvent> refreshDataList) {
+    public void refresh(List<IPropertyValueChangeEvent> refreshDataList) {
 
     }
 
-    @Override
-    public <V> V getPropertyValue(String key, Class<V> tClass) {
-        return null;
-    }
+
 
     public class FurionRoute {
         private String id;
