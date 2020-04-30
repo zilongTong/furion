@@ -1,5 +1,7 @@
 package org.furion.core.context;
 
+import org.furion.core.context.properties.PropertyValueChangeEvent;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -188,6 +190,17 @@ public class FurionProperties {
 
     public String toString() {
         return "FurionProperties{" + "prefix='" + this.prefix + "', " + "stripPrefix=" + this.stripPrefix + ", " + "retryable=" + this.retryable + ", " + "routes=" + this.routes + ", " + "addProxyHeaders=" + this.addProxyHeaders + ", " + "addHostHeader=" + this.addHostHeader + ", " + "ignoredServices=" + this.ignoredServices + ", " + "ignoredPatterns=" + this.ignoredPatterns + ", " + "ignoredHeaders=" + this.ignoredHeaders + ", " + "ignoreSecurityHeaders=" + this.ignoreSecurityHeaders + ", " + "forceOriginalQueryStringEncoding=" + this.forceOriginalQueryStringEncoding + ", " + "', " + "ignoreLocalService=" + this.ignoreLocalService + ", " + "traceRequestBody=" + this.traceRequestBody + ", " + "removeSemicolonContent=" + this.removeSemicolonContent + ", " + "sensitiveHeaders=" + this.sensitiveHeaders + ", " + "sslHostnameValidationEnabled=" + this.sslHostnameValidationEnabled + "setContentLength=" + this.setContentLength + ", " + "includeDebugHeader=" + this.includeDebugHeader + ", " + "initialStreamBufferSize=" + this.initialStreamBufferSize + ", " + "}";
+    }
+
+
+//    @Override
+    public void refresh(List<PropertyValueChangeEvent> refreshDataList) {
+
+    }
+
+//    @Override
+    public <V> V getPropertyValue(String key, Class<V> tClass) {
+        return null;
     }
 
     public class FurionRoute {
