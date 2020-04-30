@@ -201,7 +201,6 @@ public class FurionProperties extends BasePropertiesContainer {
     }
 
 
-
     public class FurionRoute {
         private String id;
         private String path;
@@ -317,6 +316,7 @@ public class FurionProperties extends BasePropertiesContainer {
         }
 
 
+        @Override
         public String toString() {
             return "FurionRoute{" + "id='" + this.id + "', " + "path='" + this.path + "', " + "serviceId='" + this.serviceId + "', " + "url='" + this.url + "', " + "stripPrefix=" + this.stripPrefix + ", " + "retryable=" + this.retryable + ", " + "sensitiveHeaders=" + this.sensitiveHeaders + ", " + "customSensitiveHeaders=" + this.customSensitiveHeaders + ", " + "}";
         }

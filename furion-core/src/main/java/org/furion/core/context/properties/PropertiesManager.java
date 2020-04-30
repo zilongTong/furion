@@ -165,6 +165,9 @@ public final class PropertiesManager implements IPropertiesManager {
     }
 
     private void setValue(Object object, Field field, Object value) {
+        if (value == null) {
+            return;
+        }
         try {
             field.set(object, value);
         } catch (IllegalAccessException e) {
