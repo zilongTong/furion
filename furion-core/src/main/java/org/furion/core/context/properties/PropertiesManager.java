@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.furion.core.annotation.PropertiesObject;
 import org.furion.core.enumeration.PropertiesSource;
 import org.furion.core.enumeration.PropertyValueChangeType;
 
@@ -138,7 +139,37 @@ public final class PropertiesManager implements IPropertiesManager {
      */
     private void initPropertiesObject(IPropertiesContainer container) {
         Class<? extends IPropertiesContainer> aClass = container.getClass();
+        PropertiesObject annotation = aClass.getAnnotation(PropertiesObject.class);
+        String prefix = "";
+        if (annotation != null) {
+            prefix = annotation.prefix();
+        }
         Field[] fields = aClass.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            Field field = fields[i];
+            field.setAccessible(true);
+            setFieldValue(container, prefix, field);
+        }
+    }
+
+
+    private void setFieldValue(IPropertiesContainer container, String prefix, Field field) {
+        String key = prefix + field.getName();
+        Class<?> type = field.getType();
+        //基础类型或字符串，直接取值赋值
+        if (type.isPrimitive() || type == String.class) {
+            setValue(container, field, getPropertyValue(key, type));
+        } else if (true) {
+
+        }
+    }
+
+    private void setValue(Object object, Field field, Object value) {
+        try {
+            field.set(object, value);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -180,8 +211,6 @@ public final class PropertiesManager implements IPropertiesManager {
             比对key-value ,计算出更新项、事件。
          */
         List<IPropertyValueChangeEvent> list = Lists.newArrayList();
-
-        Iterator<Map.Entry<Object, Object>> iterator = n.entrySet().iterator();
 
         n.forEach((k, v) -> {
             if (k == null || v == null) {

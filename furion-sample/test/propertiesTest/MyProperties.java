@@ -1,10 +1,9 @@
 package propertiesTest;
 
+import lombok.Data;
 import org.furion.core.context.properties.BasePropertiesContainer;
-import org.furion.core.context.properties.IPropertyValueChangeEvent;
 
-import java.util.List;
-
+@Data
 public class MyProperties extends BasePropertiesContainer {
 
     private String key1;
