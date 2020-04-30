@@ -7,8 +7,4 @@ public abstract class BasePropertiesContainer implements IPropertiesContainer {
         propertiesManager.register(this);
     }
 
-    @Override
-    public void register(PropertiesManager propertiesRepository) {
-        propertiesRepository.register(this);
-    }
 }

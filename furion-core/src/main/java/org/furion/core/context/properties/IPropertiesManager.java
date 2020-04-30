@@ -1,8 +1,7 @@
 package org.furion.core.context.properties;
 
-import org.furion.core.enumeration.PropertiesType;
+import org.furion.core.enumeration.PropertiesSource;
 
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -20,7 +19,7 @@ public interface IPropertiesManager {
     /**
      * 接收新的Properties值：网络推送、本地扫描 等
      */
-    void refresh(PropertiesType propertiesType,Properties properties);
+    void refresh(PropertiesSource propertiesSource, Properties properties);
 
     <V> V getPropertyValue(String key, Class<V> tClass);
 
