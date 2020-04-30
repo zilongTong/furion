@@ -76,6 +76,8 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 //            request.setBaseMsg(new PingMsg());
 //            future.channel().writeAndFlush(request);
             ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
+
+
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -85,6 +87,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
     public FurionResponse send(RequestCommand requestCommand) {
 
         String key = host.concat(":").concat(String.valueOf(port));
+        CountDownLatch waitLatch = new CountDownLatch(1);
         while (true) {
             Channel channel = ClientChannelLRUContext.get(key);
             if (channel != null) {
@@ -93,7 +96,6 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
             }
             connect();
         }
-        CountDownLatch waitLatch = new CountDownLatch(1);
         CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);

@@ -3,6 +3,7 @@ package org.furion.core.protocol.client.handler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
@@ -103,7 +104,6 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         }
     }
 
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         channelRead1(ctx, msg);
@@ -123,7 +123,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     private void channelRead1(ChannelHandlerContext ctx, Object httpObject)
             throws Exception {
         System.out.println("FurionClientHandler read..............");
-
+        Channel channel = ctx.channel();
         FurionResponse result = new FurionResponse();
         ByteBuf buf = Unpooled.EMPTY_BUFFER;
         String contentType = StringUtils.EMPTY;

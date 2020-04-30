@@ -9,7 +9,6 @@ public class FurionFilterRegistry {
 
     private Node<FurionFilter> routeFilter;
 
-
     public Node<FurionFilter> getHeadFilter() {
         return headFilter;
     }
@@ -40,7 +39,7 @@ public class FurionFilterRegistry {
                     if (index.item.compareTo(filter) > 0) {
                         index = index.next;
                     } else {
-
+                        
                     }
                 } while (index.hasNext());
             }
