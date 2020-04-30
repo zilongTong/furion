@@ -20,6 +20,8 @@ public class FurionCompiler {
 
     public void dynamicFilterCompile(LocalFileFilterLoader classLoader) {
         try {
+
+            //.java
             File file = new File(filePath);
 
             if (file.isDirectory()) {
@@ -33,6 +35,7 @@ public class FurionCompiler {
                     JavaCompiler.CompilationTask task = compiler.getTask(null, manage, null, null, null, iterable);
                     task.call();
 
+                    //.class
                     try {
                         manage.close();
                     } catch (IOException e) {
@@ -56,5 +59,8 @@ public class FurionCompiler {
             e.printStackTrace();
         }
     }
+
+
+
 
 }

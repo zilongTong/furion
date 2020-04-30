@@ -1,5 +1,6 @@
 package org.furion.core.filter;
 
+import org.furion.core.context.FurionGatewayContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ public class DynamicFilterRegisterTask {
             public void run() {
                 while (!isStop || !filterScanThread.isInterrupted()) {
                     try {
-                        //TODO
+                        FurionGatewayContext.getRegistry().registerFilter(null);
                     } catch (Exception e) {
                         log.error("filterScanThread  error", e);
                     }

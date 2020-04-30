@@ -1,5 +1,6 @@
 package org.furion.core.filter;
 
+import io.netty.channel.Channel;
 import org.furion.core.bean.eureka.Server;
 import org.furion.core.context.FurionResponse;
 import org.furion.core.context.RequestCommand;
@@ -24,16 +25,16 @@ public class RouteFilter extends FurionFilter {
     }
 
     @Override
-    public boolean shouldFilter() {
+    public boolean shouldFilter(Long requestId) {
         return true;
     }
 
     @Override
-    public Object run() throws FurionException {
-        getExclusiveOwnerChannel();
-        Long requestId = getExclusiveOwnerRequest();
+    public Object run(Long requestId, Channel channel) throws FurionException {
         RequestCommand command = new RequestCommand();
+
         command.setRequestId(requestId);
+
         command.setRequest(RequestLRUContext.get(requestId).getRequest());
         HttpNetWork httpNetWork = HttpNetFactory.fetchProcessor(ProtocolType.NETTY, new Server("127.0.0.1", 8080));
         FurionResponse response = (FurionResponse) httpNetWork.send(command);

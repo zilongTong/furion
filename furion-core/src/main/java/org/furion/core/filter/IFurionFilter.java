@@ -5,7 +5,7 @@ import org.furion.core.exception.FurionException;
 
 public interface IFurionFilter {
 
-    boolean shouldFilter();
+    boolean shouldFilter(Long id);
 
-    Object run() throws FurionException;
+    Object run(Long id, Channel channel) throws FurionException;
 }
