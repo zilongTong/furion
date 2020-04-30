@@ -23,12 +23,12 @@ public class FurionFilterRunner {
     }
 
     private void doFilter(FurionFilterRegistry.Node<FurionFilter> node) {
-//        if (node.getItem().shouldFilter0()) {
-//            node.getItem().init(requestId, channel).run();
-//        }
-//        if (node.hasNext()) {
-//            doFilter(node.getSuccessor(node));
-//        }
+        if (node.getItem().shouldFilter0()) {
+            node.getItem().init(requestId, channel).run();
+        }
+        if (node.hasNext()) {
+            doFilter(node.getSuccessor(node));
+        }
     }
 
 }
