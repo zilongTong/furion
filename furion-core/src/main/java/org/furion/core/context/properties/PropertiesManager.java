@@ -1,10 +1,15 @@
 package org.furion.core.context.properties;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.furion.core.annotation.PropertiesObject;
+import org.furion.core.context.properties.convert.PrimitiveConverter;
+import org.furion.core.context.properties.convert.StringConverter;
+import org.furion.core.context.properties.convert.TypeConvert;
 import org.furion.core.enumeration.PropertiesSource;
 import org.furion.core.enumeration.PropertyValueChangeType;
 
@@ -43,6 +48,8 @@ public final class PropertiesManager implements IPropertiesManager {
      * 网络配置中心变量，如：Apollo，admin、zookeeper等
      */
     private Properties netProperties;
+
+    private static Set<TypeConvert> converter = Sets.newHashSet(new StringConverter(), new PrimitiveConverter());
 
     /**
      * 单例实现 后期再优化
@@ -156,24 +163,18 @@ public final class PropertiesManager implements IPropertiesManager {
     private void setFieldValue(IPropertiesContainer container, String prefix, Field field) {
         String key = prefix + field.getName();
         Class<?> type = field.getType();
-        //基础类型或字符串，直接取值赋值
-        if (type.isPrimitive() || type == String.class) {
-            setValue(container, field, getPropertyValue(key, type));
-        } else if (true) {
 
-        }
-    }
-
-    private void setValue(Object object, Field field, Object value) {
-        if (value == null) {
+        Object propertyValue = getPropertyValue(key, type);
+        if (propertyValue == null) {
             return;
         }
         try {
-            field.set(object, value);
+            field.set(container, propertyValue);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
     }
+
 
     @Override
     public <T> T getPropertiesContainer(Class<? extends IPropertiesContainer> c) {
@@ -276,9 +277,97 @@ public final class PropertiesManager implements IPropertiesManager {
     /**
      * 取值。按照优先级，遍历读取，优先级原则：
      * 如：网络配置中心>环境变量>配置文件。
+     * 支持：
+     * 1、单值，如String、基础类型
+     * 2、List<String> 类型
+     * 3、Map<String,Object> key
      */
     @Override
     public <V> V getPropertyValue(String key, Class<V> tClass) {
+        //单值 类型
+        if (singleValue(tClass)) {
+            String value = getStringValue(key);
+            if (StringUtils.isBlank(value)) {
+                return null;
+            }
+
+            if (typeCheck(tClass, Double.class, double.class)) {
+                return (V) Double.valueOf(value);
+            } else if (typeCheck(tClass, Long.class, long.class)) {
+                return (V) Long.valueOf(value);
+            } else if (typeCheck(tClass, int.class, Integer.class, char.class)) {
+                return (V) Integer.valueOf(value);
+            } else if (typeCheck(tClass, boolean.class, Boolean.class)) {
+                return (V) Boolean.valueOf(value);
+            } else if (typeCheck(tClass, String.class)) {
+                return (V) value;
+            } else {
+                System.out.println("不支持类型 " + tClass.getSimpleName());
+                return null;
+            }
+        } else
+            //List。设定以key[0] key[0] 方式填充值
+            if (tClass == List.class) {
+                Map<String, String> vs = getListValue(key + "[", "]");
+                if (vs.isEmpty()) {
+                    return (V) Lists.newArrayList();
+                }
+                String[] arr = getMaxIndex(vs);
+                List<String> listValue = Lists.newArrayList(arr);
+                return (V) listValue;
+            } else if (tClass == Map.class) {
+                Map<String, String> vs = getListValue(key + ".", null);
+                // TODO
+                return null;
+            }
+
+        throw new RuntimeException("暂不支持此种类型");
+    }
+
+
+    private String[] getMaxIndex(Map<String, String> vs) {
+        String[] arr = new String[0];
+        Iterator<Map.Entry<String, String>> iterator = vs.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String> entry = iterator.next();
+            String k = entry.getKey();
+            String value = entry.getValue();
+            String num = k.substring(k.lastIndexOf("[") + 1, k.lastIndexOf("]"));
+            if (StringUtils.isBlank(num)) {
+                continue;
+            }
+            Integer integer = Integer.valueOf(num);
+            if (integer < 0) {
+                continue;
+            }
+            //数组扩容
+            if (integer + 1 > arr.length) {
+                arr = Arrays.copyOf(arr, integer + 1);
+            }
+            arr[integer] = value;
+
+        }
+        return arr;
+    }
+
+    /**
+     * 单值类型：String，基础类型
+     */
+    private boolean singleValue(Class type) {
+        return type.isPrimitive() ||
+                type == String.class;
+    }
+
+    private boolean typeCheck(Class type, Class... target) {
+        for (Class item : target) {
+            if (item == type) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getStringValue(String key) {
         String value = localProperties.getProperty(key);
 
         if (systemProperties.containsKey(key)) {
@@ -287,9 +376,41 @@ public final class PropertiesManager implements IPropertiesManager {
         if (netProperties.containsKey(key)) {
             value = netProperties.getProperty(key);
         }
-        //TODO 类型转换
-        return (V) value;
+        return value;
     }
 
+
+    /**
+     * 获取以某种key开头\结尾的所有 配置项
+     */
+    private Map<String, String> getListValue(String keyPrefix, String keySuffix) {
+        Map<String, String> map = Maps.newHashMap();
+        doGetListValue(keyPrefix, keySuffix, map, localProperties);
+        doGetListValue(keyPrefix, keySuffix, map, systemProperties);
+        doGetListValue(keyPrefix, keySuffix, map, netProperties);
+        return map;
+    }
+
+    private void doGetListValue(String keyPrefix, String keySuffix, Map<String, String> map, Properties properties) {
+
+        properties.forEach((k, v) -> {
+            if (StringUtils.isBlank(keyPrefix) && StringUtils.isNotBlank(keySuffix)) {
+                if (k.toString().endsWith(keySuffix)) {
+                    map.put(k.toString(), v.toString());
+                }
+            } else if (StringUtils.isBlank(keySuffix) && StringUtils.isNotBlank(keyPrefix)) {
+                if (k.toString().startsWith(keyPrefix)) {
+                    map.put(k.toString(), v.toString());
+                }
+            } else if (StringUtils.isNotBlank(keySuffix) && StringUtils.isNotBlank(keyPrefix)) {
+                if (k.toString().startsWith(keyPrefix) && k.toString().endsWith(keySuffix)) {
+                    map.put(k.toString(), v.toString());
+                }
+            } else {
+                throw new RuntimeException("过滤条件不能全为空");
+            }
+
+        });
+    }
 
 }
