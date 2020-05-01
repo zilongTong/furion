@@ -29,7 +29,7 @@ public class FurionGatewayContext implements GatewayContext {
 
     public FurionGatewayContext() {
         propertiesManager = PropertiesManager.getInstance();
-//        furionProperties = new FurionProperties();
+        furionProperties = new FurionProperties();
         init();
         refresh();
     }

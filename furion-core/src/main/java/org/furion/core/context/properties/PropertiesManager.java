@@ -301,9 +301,6 @@ public final class PropertiesManager implements IPropertiesManager {
                 return (V) Boolean.valueOf(value);
             } else if (typeCheck(tClass, String.class)) {
                 return (V) value;
-            } else {
-                System.out.println("不支持类型 " + tClass.getSimpleName());
-                return null;
             }
         } else
             //List。设定以key[0] key[0] 方式填充值
@@ -320,8 +317,9 @@ public final class PropertiesManager implements IPropertiesManager {
                 // TODO
                 return null;
             }
+        System.out.println("暂不支持 支持此种类型");
+        return null;
 
-        throw new RuntimeException("暂不支持此种类型");
     }
 
 
