@@ -1,5 +1,6 @@
 package org.furion.core.utils;
 
+import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -23,6 +24,32 @@ import java.util.jar.JarFile;
  **/
 @Slf4j
 public class ClassUtil {
+
+    private static Set<Class> singleValueType = Sets.newHashSet(Integer.class
+            , int.class
+            , Byte.class
+            , byte.class
+            , Long.class
+            , long.class
+            , Double.class
+            , double.class
+            , Float.class
+            , float.class
+            , Character.class
+            , char.class
+            , Short.class
+            , short.class
+            , Boolean.class
+            , boolean.class
+            , String.class);
+
+    /**
+     * 单值类型：String，基础类型
+     */
+    public static boolean isSingleType(Class className) {
+        return singleValueType.contains(className);
+
+    }
 
 
     /**
