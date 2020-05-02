@@ -43,7 +43,7 @@ public class LocalFileFilterLoader extends BaseFilterLoader {
      */
     private String fixPath() {
         //filter class文件地址
-        return propertiesManager.getPropertyValue("filter.filePath", String.class);
+        return propertiesManager.getSinglePropertyValue("filter.filePath", String.class);
     }
 
 }

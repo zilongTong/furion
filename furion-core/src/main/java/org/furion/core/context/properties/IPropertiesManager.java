@@ -2,6 +2,8 @@ package org.furion.core.context.properties;
 
 import org.furion.core.enumeration.PropertiesSource;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -21,7 +23,16 @@ public interface IPropertiesManager {
      */
     void refresh(PropertiesSource propertiesSource, Properties properties);
 
-    <V> V getPropertyValue(String key, Class<V> tClass);
+    /**
+     * 获取单值
+     */
+    <V> V getSinglePropertyValue(String key, Class<V> tClass);
+
+    /**
+     * 获取String集合
+     */
+    Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass);
+
 
     void register(IPropertiesContainer container);
 

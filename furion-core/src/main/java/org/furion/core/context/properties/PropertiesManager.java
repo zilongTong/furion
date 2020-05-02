@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.furion.core.annotation.PropertiesObject;
 import org.furion.core.context.properties.convert.PrimitiveConverter;
@@ -18,6 +18,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -121,7 +124,7 @@ public final class PropertiesManager implements IPropertiesManager {
         //默认路径
         //获取环境变量动态设置值
         String path = PropertiesManager.class.getResource("").getPath();
-        String pathFromSystem = getPropertyValue("config-path", String.class);
+        String pathFromSystem = getSinglePropertyValue("config-path", String.class);
         if (StringUtils.isNotBlank(pathFromSystem)) {
             path = pathFromSystem;
         }
@@ -154,6 +157,10 @@ public final class PropertiesManager implements IPropertiesManager {
         Field[] fields = aClass.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
+
+            if (Modifier.isFinal(field.getModifiers())) {
+                continue;
+            }
             field.setAccessible(true);
             setFieldValue(container, prefix, field);
         }
@@ -163,8 +170,22 @@ public final class PropertiesManager implements IPropertiesManager {
     private void setFieldValue(IPropertiesContainer container, String prefix, Field field) {
         String key = prefix + field.getName();
         Class<?> type = field.getType();
+        Object propertyValue = null;
+        if (singleValue(type)) {
+            propertyValue = getSinglePropertyValue(key, type);
+        } else if (Collection.class.isAssignableFrom(type)) {
+            propertyValue = getCollectionPropertyValue(key, (Class<? extends Collection>) type);
+        } else if (Map.class.isAssignableFrom(type)) {
+            //获取V类型
+            ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+            Type keyType = genericType.getActualTypeArguments()[0];
+            //只支持 key 为String 类型
+            if (keyType == String.class) {
+                Type value = genericType.getActualTypeArguments()[1];
+                propertyValue = getMapPropertyValue(key, (Class<? extends Map>) type, (Class) value);
+            }
+        }
 
-        Object propertyValue = getPropertyValue(key, type);
         if (propertyValue == null) {
             return;
         }
@@ -278,56 +299,130 @@ public final class PropertiesManager implements IPropertiesManager {
      * 取值。按照优先级，遍历读取，优先级原则：
      * 如：网络配置中心>环境变量>配置文件。
      * 支持：
-     * 1、单值，如String、基础类型
+     * 只支持 单值，如String、基础类型
      * 2、List<String> 类型
      * 3、Map<String,Object> key
      */
     @Override
-    public <V> V getPropertyValue(String key, Class<V> tClass) {
+    public <V> V getSinglePropertyValue(String key, Class<V> tClass) {
         //单值 类型
         if (singleValue(tClass)) {
             String value = getStringValue(key);
-            if (StringUtils.isBlank(value)) {
-                return null;
+            if (StringUtils.isNotBlank(value)) {
+                return (V) buildSingleValue(tClass, value);
+            }
+        }
+        System.out.println("暂不支持 支持此种类型");
+        return null;
+    }
+
+    @Override
+    public Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass) {
+        String value = getStringValue(key);
+        //List。设定以key[0] key[0] 方式填充值
+        if (tClass == List.class) {
+            //以,分割形式
+            if (StringUtils.isNotBlank(value)) {
+                String[] arr = value.split(",");
+                return Lists.newArrayList(arr);
+            }
+            //以[0]指定位置形式
+            Map<String, String> vs = getListValue(key + "[", "]");
+            if (MapUtils.isNotEmpty(vs)) {
+                String[] arr = buildValueArr(vs);
+                return Lists.newArrayList(arr);
             }
 
-            if (typeCheck(tClass, Double.class, double.class)) {
-                return (V) Double.valueOf(value);
-            } else if (typeCheck(tClass, Long.class, long.class)) {
-                return (V) Long.valueOf(value);
-            } else if (typeCheck(tClass, int.class, Integer.class, char.class)) {
-                return (V) Integer.valueOf(value);
-            } else if (typeCheck(tClass, boolean.class, Boolean.class)) {
-                return (V) Boolean.valueOf(value);
-            } else if (typeCheck(tClass, String.class)) {
-                return (V) value;
+        } else if ((tClass == Set.class)) {
+            //Set 值以 , 分割
+            if (StringUtils.isNotBlank(value)) {
+                String[] arr = value.split(",");
+                return Sets.newHashSet(arr);
             }
-        } else
-            //List。设定以key[0] key[0] 方式填充值
-            if (tClass == List.class) {
-                Map<String, String> vs = getListValue(key + "[", "]");
-                if (vs.isEmpty()) {
-                    return (V) Lists.newArrayList();
+        }
+        return null;
+    }
+
+
+    /**
+     * 获取Map<K,V>类型
+     */
+    <V> Map<String, V> getMapPropertyValue(String key, Class<? extends Map> tClass, Class<V> vClass) {
+        if (StringUtils.isBlank(key) || tClass == null || vClass == null) {
+            return null;
+        }
+        Map<String, String> vs = getListValue(key + ".", null);
+        if (MapUtils.isNotEmpty(vs)) {
+            try {
+                Map map;
+                //接口类 不可实例化，默认使用LinkedHashMap
+                if (Modifier.isInterface(tClass.getModifiers())) {
+                    map = new LinkedHashMap();
+                } else {
+                    map = tClass.newInstance();
                 }
-                String[] arr = getMaxIndex(vs);
-                List<String> listValue = Lists.newArrayList(arr);
-                return (V) listValue;
-            } else if (tClass == Map.class) {
-                Map<String, String> vs = getListValue(key + ".", null);
-                // TODO
-                return null;
+                for (Map.Entry<String, String> entry : vs.entrySet()) {
+                    String fullKey = entry.getKey();
+                    String value = entry.getValue();
+                    String temp = fullKey.replace(key + ".", "");
+                    if (StringUtils.isBlank(temp)) {
+                        continue;
+                    }
+                    int idx = temp.indexOf(".");
+                    if (idx < 0) {
+                        continue;
+                    }
+                    String mapKey = temp.substring(0, idx);
+                    String fieldName = temp.substring(idx + 1);
+                    if (StringUtils.isBlank(fieldName)) {
+                        continue;
+                    }
+                    Object o = map.get(mapKey);
+                    if (o == null) {
+                        o = vClass.newInstance();
+                        map.put(mapKey, o);
+                    }
+                    //填充o 的值，目前只支持 单值 类型
+                    Field field = o.getClass().getDeclaredField(fieldName);
+                    if (field != null) {
+                        if (singleValue(field.getType())) {
+                            field.setAccessible(true);
+                            field.set(o, buildSingleValue(field.getType(), value));
+                        }
+                    }
+                }
+                return map;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        System.out.println("暂不支持 支持此种类型");
+
+        }
         return null;
 
     }
 
 
-    private String[] getMaxIndex(Map<String, String> vs) {
+    private Object buildSingleValue(Class tClass, String value) {
+        if (typeCheck(tClass, Double.class, double.class)) {
+            return Double.valueOf(value);
+        } else if (typeCheck(tClass, Long.class, long.class)) {
+            return Long.valueOf(value);
+        } else if (typeCheck(tClass, int.class, Integer.class, char.class)) {
+            return Integer.valueOf(value);
+        } else if (typeCheck(tClass, boolean.class, Boolean.class)) {
+            return Boolean.valueOf(value);
+        } else if (typeCheck(tClass, String.class)) {
+            return value;
+        } else {
+            return null;
+        }
+
+    }
+
+
+    private String[] buildValueArr(Map<String, String> vs) {
         String[] arr = new String[0];
-        Iterator<Map.Entry<String, String>> iterator = vs.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, String> entry = iterator.next();
+        for (Map.Entry<String, String> entry : vs.entrySet()) {
             String k = entry.getKey();
             String value = entry.getValue();
             String num = k.substring(k.lastIndexOf("[") + 1, k.lastIndexOf("]"));

@@ -1,6 +1,12 @@
 package propertiesTest;
 
 import org.furion.core.context.FurionGatewayContext;
+import org.furion.core.context.FurionProperties;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.*;
 
 public class Test {
     public static void main(String[] args) {
@@ -10,5 +16,8 @@ public class Test {
         MyProperties myProperties = new MyProperties();
 
         System.out.println(myProperties);
+
     }
+
+
 }
