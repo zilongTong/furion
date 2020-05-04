@@ -8,8 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 @PropertiesAutoRefresh
-public class MyProperties extends BasePropertiesContainer {
+public class MyProperties<T> extends BasePropertiesContainer {
 
+    private T t;
     private String key1;
     private String key2;
     private boolean key3;

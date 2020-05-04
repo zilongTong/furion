@@ -16,7 +16,7 @@ public class FurionCompiler {
         this.filePath = filePath;
     }
 
-    public void dynamicFilterCompile(LocalFileFilterLoader classLoader) {
+    public void dynamicFilterCompile() {
         try {
 
             //.java

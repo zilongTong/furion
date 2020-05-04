@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.furion.core.annotation.Ignore;
 import org.furion.core.annotation.PropertiesObject;
 import org.furion.core.annotation.PropertiesAutoRefresh;
 import org.furion.core.context.properties.convert.PrimitiveConverter;
@@ -160,7 +161,13 @@ public final class PropertiesManager implements IPropertiesManager {
         Field[] fields = aClass.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
-
+            Class<?> type = field.getType();
+            if (type.getAnnotation(Ignore.class) != null) {
+                continue;
+            }
+            if (type == Object.class) {
+                continue;
+            }
             if (Modifier.isFinal(field.getModifiers())) {
                 continue;
             }
