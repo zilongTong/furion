@@ -1,6 +1,7 @@
 package org.furion.core.filter;
 
 import org.furion.core.exception.UnknownFurionFilterException;
+import org.furion.core.filter.filters.RouteFilter;
 
 public class FurionFilterRegistry {
 

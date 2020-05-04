@@ -1,4 +1,4 @@
-package org.furion.core.filter;
+package org.furion.core.filter.filters;
 
 
 import org.furion.core.bean.eureka.Server;
@@ -7,6 +7,7 @@ import org.furion.core.context.RequestCommand;
 import org.furion.core.context.RequestLRUContext;
 import org.furion.core.enumeration.ProtocolType;
 import org.furion.core.exception.FurionException;
+import org.furion.core.filter.FurionFilter;
 import org.furion.core.protocol.client.http.HttpNetFactory;
 import org.furion.core.protocol.client.http.HttpNetWork;
 

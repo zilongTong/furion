@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author wplin
@@ -314,6 +315,7 @@ public final class PropertiesManager implements IPropertiesManager {
         return null;
     }
 
+
     @Override
     public Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass) {
         String value = getStringValue(key);
@@ -412,7 +414,7 @@ public final class PropertiesManager implements IPropertiesManager {
         } else if (typeCheck(tClass, String.class)) {
             return value;
         } else {
-            return null;
+            throw new RuntimeException("类型不支持" + tClass.getName());
         }
 
     }
@@ -453,13 +455,8 @@ public final class PropertiesManager implements IPropertiesManager {
 
     private String getStringValue(String key) {
         String value = localProperties.getProperty(key);
-
-        if (systemProperties.containsKey(key)) {
-            value = systemProperties.getProperty(key);
-        }
-        if (netProperties.containsKey(key)) {
-            value = netProperties.getProperty(key);
-        }
+        value = systemProperties.getProperty(key, value);
+        value = netProperties.getProperty(key, value);
         return value;
     }
 
