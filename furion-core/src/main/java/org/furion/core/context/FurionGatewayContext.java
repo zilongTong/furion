@@ -19,6 +19,10 @@ public class FurionGatewayContext implements GatewayContext {
     private FurionProperties furionProperties;
     private FilterManager filterManager;
     private FurionFilterRegistry registry;
+    /**
+     * 用户启动程序所在Main class.
+     * 扫描此class package下的 Filter 加载。
+     */
     private Class PROJECT_MAIN_CLASS;
 
 

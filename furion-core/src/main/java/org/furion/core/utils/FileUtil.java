@@ -19,6 +19,9 @@ public class FileUtil {
     }
 
     private static void doFilter(File file, FilenameFilter filenameFilter, Set<File> set) {
+        if (!file.exists()) {
+            return;
+        }
         if (file.isFile()) {
             return;
         }

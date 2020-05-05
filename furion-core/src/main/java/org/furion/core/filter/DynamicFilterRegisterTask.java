@@ -7,10 +7,12 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.furion.core.context.FurionGatewayContext;
 import org.furion.core.context.properties.PropertiesManager;
+import org.furion.core.utils.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -53,13 +55,13 @@ public class DynamicFilterRegisterTask {
                         /*
                         扫描指定目录下的Filter Java 源文件，交由FilterManager 统一处理
                          */
-                        File file = new File(scanPath);
-                        if (!file.exists()) {
-                            return;
-                        }
-                        Set<File> set = Sets.newHashSet();
 
-                        listFile(file, set);
+                        Set<File> set = FileUtil.listFileFromDir(scanPath, new FilenameFilter() {
+                            @Override
+                            public boolean accept(File dir, String name) {
+                                return name.endsWith(".java");
+                            }
+                        });
 
                         FilterManager.getInstance().acceptFilterFile(set);
 
