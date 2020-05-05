@@ -14,7 +14,7 @@ public class Test {
     public static void main(String[] args) {
         //手动指定 配置文件路径
         System.setProperty("config-path", "/Users/wplin/dev/codes/ideaWorkSpace/furion/furion-sample/test/propertiesTest/testProperty.properties");
-        FurionGatewayContext context = new FurionGatewayContext();
+        FurionGatewayContext context = new FurionGatewayContext(Test.class);
         MyProperties<String> myProperties = new MyProperties<>();
         System.out.println("初始值key1 = " + myProperties.getKey1());
         PropertiesManager propertiesManager = PropertiesManager.getInstance();

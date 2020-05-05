@@ -64,7 +64,6 @@ public final class PropertiesManager implements IPropertiesManager {
     public static PropertiesManager getInstance() {
         if (propertiesManager == null) {
             propertiesManager = new PropertiesManager();
-            propertiesManager.init();
         }
         return propertiesManager;
     }
@@ -76,7 +75,7 @@ public final class PropertiesManager implements IPropertiesManager {
     }
 
 
-    private void init() {
+    public void init() {
         //加载。保持顺序
         loadPropsFromSystem();
         loadPropsFromLocalFile();

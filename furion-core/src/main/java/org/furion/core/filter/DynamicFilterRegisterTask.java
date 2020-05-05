@@ -1,14 +1,19 @@
 package org.furion.core.filter;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.sun.tools.javac.util.Assert;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.furion.core.context.FurionGatewayContext;
+import org.furion.core.context.properties.PropertiesManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class DynamicFilterRegisterTask {
@@ -17,43 +22,23 @@ public class DynamicFilterRegisterTask {
 
     private Thread filterScanThread;
 
-    private static DynamicFilterRegisterTask instance = new DynamicFilterRegisterTask();
-
     private volatile boolean isStop = false;
 
+    private String scanPath;
+    private long timeGap;
 
-    /**
-     * 默认扫描间隔 30s
-     */
-    private long timeGap = 30 * 1000;
-    private String filterFilePath = "/opt/data/filters";
-    private long minTimeGap = 10 * 1000;
-
-
-    private DynamicFilterRegisterTask() {
+    public DynamicFilterRegisterTask(String scanPath, long timeGap) {
+        this.scanPath = scanPath;
+        this.timeGap = timeGap;
     }
-
-    public static DynamicFilterRegisterTask getInstance() {
-        return instance;
-    }
-
 
     private void execute(final Long timeGap) {
         filterScanThread.start();
     }
 
-    public void start(Long timeGap, String path) {
-        if (timeGap != null && timeGap > minTimeGap) {
-            this.timeGap = timeGap;
-        }
-
-        if (StringUtils.isNotBlank(path)) {
-            filterFilePath = path;
-        }
+    public void start() {
         prepareTheadTask();
         filterScanThread.start();
-
-
     }
 
     /**
@@ -68,7 +53,15 @@ public class DynamicFilterRegisterTask {
                         /*
                         扫描指定目录下的Filter Java 源文件，交由FilterManager 统一处理
                          */
-                        FilterManager.getInstance().acceptFilterFile(null);
+                        File file = new File(scanPath);
+                        if (!file.exists()) {
+                            return;
+                        }
+                        Set<File> set = Sets.newHashSet();
+
+                        listFile(file, set);
+
+                        FilterManager.getInstance().acceptFilterFile(set);
 
                     } catch (Exception e) {
                         log.error("filterScanThread  error", e);
@@ -83,6 +76,28 @@ public class DynamicFilterRegisterTask {
         };
         filterScanThread.setDaemon(true);
         filterScanThread.setName("filterScanThread, scan filter  per 30s");
+    }
+
+    private void listFile(File file, Set<File> set) {
+        if (file.isFile() && isJavaCodeFile(file)) {
+            set.add(file);
+            return;
+        }
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files == null) {
+                return;
+            }
+            for (File item : files) {
+                if (isJavaCodeFile(item)) {
+                    listFile(item, set);
+                }
+            }
+        }
+    }
+
+    private boolean isJavaCodeFile(File file) {
+        return file != null && file.getName().endsWith(".java");
     }
 
     public void stop() {

@@ -17,7 +17,7 @@ public class FurionFilterRunner {
     }
 
     public void filter() {
-        FurionFilterRegistry registry = FurionGatewayContext.getRegistry();
+        FurionFilterRegistry registry = FurionGatewayContext.getInstance().getRegistry();
         FurionFilterRegistry.Node<FurionFilter> node = (FurionFilterRegistry.Node<FurionFilter>) registry.getHeadFilter();
         doFilter(node);
     }
