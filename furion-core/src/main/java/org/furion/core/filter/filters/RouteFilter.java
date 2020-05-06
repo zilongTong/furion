@@ -34,7 +34,7 @@ public class RouteFilter extends FurionFilter {
     //todo: for test
     @Override
     public String filterType() {
-        return "pre";
+        return "route";
     }
 
     @Override

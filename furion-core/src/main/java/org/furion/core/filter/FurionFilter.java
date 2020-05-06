@@ -70,19 +70,18 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
 
     @Override
     public boolean shouldFilter() {
-        return false;
+        return true;
     }
 
     //todo: for test
     protected boolean shouldFilter0() {
         if (filterType().equalsIgnoreCase(FilterType.PRE.name())) {
-//            return shouldFilter() && getCurrentExclusiveOwnerWhetherWriteAndFlush();
-            return shouldFilter();
+            return shouldFilter() && getCurrentExclusiveOwnerWhetherWriteAndFlush();
         }
         if (filterType().equalsIgnoreCase(FilterType.POST.name())) {
             return shouldFilter();
         }
-        return false;
+        return true;
     }
 
     @Override
