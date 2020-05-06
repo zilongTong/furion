@@ -123,7 +123,8 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     private void channelRead1(ChannelHandlerContext ctx, Object httpObject)
             throws Exception {
         System.out.println("FurionClientHandler read..............");
-        Channel channel = ctx.channel();
+        ClientChannelLRUContext.setFree((SocketChannel) ctx.channel());
+
         FurionResponse result = new FurionResponse();
         ByteBuf buf = Unpooled.EMPTY_BUFFER;
         String contentType = StringUtils.EMPTY;

@@ -4,6 +4,7 @@ import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.filter.FilterType;
 import org.furion.core.filter.FurionFilter;
 import org.furion.core.filter.FurionFilterRegistry;
+import org.furion.core.filter.RouteFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,9 @@ public class FurionGatewayContext implements GatewayContext {
 
 
     public static FurionFilterRegistry getRegistry() {
+        if(registry == null){
+            registry = new FurionFilterRegistry(new RouteFilter());
+        }
         return registry;
     }
 

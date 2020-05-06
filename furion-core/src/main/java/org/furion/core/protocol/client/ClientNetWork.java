@@ -71,13 +71,10 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
                 .handler(new FurionClientChannelInitializer(bootstrap, server, timer, true))
                 .option(ChannelOption.SO_KEEPALIVE, true);
         try {
-            ChannelFuture future = bootstrap.connect(host, port).sync();
-//            RpcRequest request=new RpcRequest();
-//            request.setBaseMsg(new PingMsg());
-//            future.channel().writeAndFlush(request);
-            ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
-
-
+            for(int i=0; i<50; i++) {
+                ChannelFuture future = bootstrap.connect(host, port).sync();
+                ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -88,6 +85,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 
         String key = host.concat(":").concat(String.valueOf(port));
         CountDownLatch waitLatch = new CountDownLatch(1);
+        CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
         while (true) {
             Channel channel = ClientChannelLRUContext.get(key);
             if (channel != null) {
@@ -96,7 +94,6 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
             }
             connect();
         }
-        CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);
             FurionResponse response = ResponseLRUContext.get(requestCommand.getRequestId());

@@ -22,6 +22,12 @@ public class FurionFilterRegistry {
         this.routeFilter = headFilter;
     }
 
+    //todo: for test
+    public FurionFilterRegistry(FurionFilter headFilter) {
+        this.headFilter = new Node<>(null, null, new RouteFilter());
+        this.routeFilter = new Node<>(null,null,headFilter);
+    }
+
     public void registerFilter(FurionFilter filter) {
         if (filter == null) {
             throw new UnknownFurionFilterException();
