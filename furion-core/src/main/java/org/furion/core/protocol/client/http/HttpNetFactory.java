@@ -3,10 +3,8 @@ package org.furion.core.protocol.client.http;
 import io.netty.util.HashedWheelTimer;
 import org.furion.core.bean.eureka.Server;
 import org.furion.core.enumeration.ProtocolType;
-import org.furion.core.protocol.client.ClientNetWork;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.furion.core.protocol.client.NettyClientNetWork;
+import org.furion.core.protocol.client.OKHttpClientNetWork;
 
 public class HttpNetFactory {
 
@@ -23,12 +21,12 @@ public class HttpNetFactory {
      */
     public static HttpNetWork fetchProcessor(ProtocolType type, Server server) {
         if (type.equals(ProtocolType.NETTY)) {
-            return new ClientNetWork(timer, server);
+            return new NettyClientNetWork(timer, server);
         }
-//        if (type.equals(ProtocolType.NETTY)) {
-//            return new ClientNetWork();
-//        }
-        return new ClientNetWork(timer, server);
+        if (type.equals(ProtocolType.OK_HTTP)) {
+            return new OKHttpClientNetWork();
+        }
+        return new OKHttpClientNetWork();
     }
 
 //    public static HttpNetWork fetchProcessorSingleton(ProtocolType type) {

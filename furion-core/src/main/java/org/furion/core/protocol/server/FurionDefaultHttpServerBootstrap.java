@@ -1,5 +1,7 @@
 package org.furion.core.protocol.server;
 
+import org.apache.commons.lang3.time.StopWatch;
+import org.furion.core.context.FurionGatewayContext;
 import org.furion.core.enumeration.ProtocolType;
 import org.furion.core.utils.FurionUtils;
 import org.slf4j.Logger;
@@ -262,6 +264,20 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
         }
     }
 
+    public FurionGatewayContext run(String... args) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        FurionGatewayContext context = new FurionGatewayContext(args);
+        try {
+//            context.refresh();
+            this.withPort(8080).start();
+            stopWatch.stop();
+            return context;
+        } catch (Throwable var9) {
+            throw new IllegalStateException(var9);
+        }
+    }
+
     @Override
     public FurionHttpServerBootstrap withTransportProtocol(com.sun.deploy.net.protocol.ProtocolType protocol) {
         return null;
@@ -271,4 +287,10 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
     public FurionHttpServerBootstrap withUseDnsSec(boolean useDnsSec) {
         return null;
     }
+
+
+    public static void main(String[] args) {
+        new FurionDefaultHttpServerBootstrap().run(args);
+    }
+
 }

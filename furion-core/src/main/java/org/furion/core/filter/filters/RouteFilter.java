@@ -27,14 +27,14 @@ public class RouteFilter extends FurionFilter {
 
     FurionServiceLoader<AbstractLoadBalancerRule> furionServiceLoader;
 
-    public RouteFilter(){
+    public RouteFilter() {
         furionServiceLoader = FurionServiceLoader.load(AbstractLoadBalancerRule.class);
     }
 
     //todo: for test
     @Override
     public String filterType() {
-        return "pre";
+        return "route";
     }
 
     @Override
@@ -65,11 +65,11 @@ public class RouteFilter extends FurionFilter {
         Long requestId = getCurrentExclusiveOwnerRequestId();
         FullHttpRequest fullHttpRequest = RequestLRUContext.get(requestId).getRequest();
         String uri = fullHttpRequest.uri();
-        if(uri.startsWith("/config")){
+        if (uri.startsWith("/config")) {
 
         }
         String u = uri.replace("/spi", "");
-        if(u.endsWith("ico"))
+        if (u.endsWith("ico"))
             return null;
         String urlOrServiceId = getServiceId(u);
 
@@ -82,37 +82,31 @@ public class RouteFilter extends FurionFilter {
             //serviceId
             server = furionServiceLoader.first().choose(urlOrServiceId);
         }
-        FurionRequest request = new FurionRequest();
-        request.setRequestId(requestId);
-        request.setRequest(fullHttpRequest);
+        RequestCommand command = RequestLRUContext.get(requestId).builder();
         fullHttpRequest.headers().set("Host", server.getHost().concat(":").concat(String.valueOf(server.getPort())));
         fullHttpRequest.setUri(getTargetUrl(u));
-        RequestLRUContext.add(requestId, request);
+        RequestLRUContext.add(requestId, command);
         fullHttpRequest.headers().set(REQUEST_ID, requestId);
-        RequestCommand command = new RequestCommand();
-        command.setRequestId(requestId);
-        command.setRequest(fullHttpRequest);
         HttpNetWork httpNetWork = HttpNetFactory.fetchProcessor(ProtocolType.NETTY, server);
         FurionResponse response = (FurionResponse) httpNetWork.send(command);
-        ChannelFuture future = getCurrentExclusiveOwnerChannel().writeAndFlush(response.getResponse());
+        ChannelFuture future = writeAndFlush(response.getResponse());
         return null;
     }
 
 
-
     //mock
-    public FurionProperties getFurionProperties(){
+    public FurionProperties getFurionProperties() {
         FurionProperties furionProperties = new FurionProperties();
         Map<String, List<FurionProperties.FurionRoute>> map = new HashMap<>();
         List<FurionProperties.FurionRoute> furionRouteList = new ArrayList<>();
-        FurionProperties.FurionRoute furionRoute = new FurionProperties.FurionRoute("/solar-service-a/**","solar-service-a");
+        FurionProperties.FurionRoute furionRoute = new FurionProperties.FurionRoute("/solar-service-a/**", "solar-service-a");
         furionRouteList.add(furionRoute);
-        map.put("/solar-service-a",furionRouteList);
+        map.put("/solar-service-a", furionRouteList);
         furionProperties.setRoutes(map);
         return furionProperties;
     }
 
-    public String getServiceId(String targetUrl){
+    public String getServiceId(String targetUrl) {
         try {
             String urlPreffix = targetUrl.substring(0, targetUrl.indexOf("/", 1));
             List<FurionProperties.FurionRoute> list = getFurionProperties().getRoutes().get(urlPreffix);
@@ -121,12 +115,13 @@ public class RouteFilter extends FurionFilter {
                     return StringUtil.isNullOrEmpty(furionRoute.getServiceId()) ? furionRoute.getUrl() : furionRoute.getServiceId();
                 }
             }
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
         System.out.println(targetUrl);
         return targetUrl.substring(1, targetUrl.indexOf("/", 1));
     }
 
-    public String getTargetUrl(String targetUrl){
+    public String getTargetUrl(String targetUrl) {
         try {
             String urlPreffix = targetUrl.substring(0, targetUrl.indexOf("/", 1));
             List<FurionProperties.FurionRoute> list = getFurionProperties().getRoutes().get(urlPreffix);
@@ -135,12 +130,13 @@ public class RouteFilter extends FurionFilter {
                     return UrlMatchUtil.transUrl(targetUrl, furionRoute.getPath());
                 }
             }
-        }catch (Exception e){}
+        } catch (Exception e) {
+        }
         return targetUrl.substring(targetUrl.indexOf("/", 1));
     }
 
-    public void updateConfig(String uri,FullHttpRequest fullHttpRequest){
-        switch (uri){
+    public void updateConfig(String uri, FullHttpRequest fullHttpRequest) {
+        switch (uri) {
             case "config/furion":
                 break;
             case "config/route":

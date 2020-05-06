@@ -26,6 +26,11 @@ public class OkHttpUtil {
             .connectTimeout(2, TimeUnit.SECONDS)
             .connectionPool(new ConnectionPool(500, 5, TimeUnit.MINUTES)).build();
 
+
+    public static OkHttpClient getOkHttpClient() {
+        return OK_HTTP_CLIENT;
+    }
+
     /**
      * @param url          请求的url
      * @param queries      请求的参数 没有可以传null
@@ -139,7 +144,7 @@ public class OkHttpUtil {
         Response response = null;
         String requestJson = null;
         try {
-            requestJson = mapper.writeValueAsString(request.body());
+//            requestJson = mapper.writeValueAsString(request.body());
             response = OK_HTTP_CLIENT.newCall(request).execute();
             if (response.isSuccessful() && response.body() != null) {
                 String result = response.body().string();

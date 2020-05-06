@@ -20,7 +20,7 @@ public final class FurionFilterRegistry {
 
     public static FurionFilterRegistry getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new FurionFilterRegistry((Node)null);
+            INSTANCE = new FurionFilterRegistry((Node) null);
         }
         return INSTANCE;
     }
@@ -36,9 +36,9 @@ public final class FurionFilterRegistry {
         this.routeFilter = new Node<>(null, null, headFilter);
     }
 
-        /**
-         * 删除原Filter对应的实例 TODO
-         */
+    /**
+     * 删除原Filter对应的实例 TODO
+     */
     public void registerFilter(String key, FurionFilter filter) {
         System.out.println("Filter注册 key:" + key + ",filterName:" + filter.getClass().getName());
     }
@@ -55,6 +55,7 @@ public final class FurionFilterRegistry {
                 routeFilter = temp;
                 headFilter = node;
             } else {
+                insertNode(filter, headFilter);
                 Node<FurionFilter> index = headFilter;
                 do {
                     if (index.item.compareTo(filter) > 0) {
@@ -65,17 +66,23 @@ public final class FurionFilterRegistry {
                 } while (index.hasNext());
             }
         }
-
         if (FilterType.POST.name().equalsIgnoreCase(filter.filterType())) {
-
-
-            Node temp = headFilter;
-
-//            Node<FurionFilter> node = new Node<>(temp, filter);
-//            headFilter = node;
+            insertNode(filter, routeFilter);
         }
     }
 
+    private void insertNode(FurionFilter filter, Node<FurionFilter> headFilter) {
+        Node<FurionFilter> index = headFilter;
+        do {
+            if (index.item.compareTo(filter) > 0) {
+                index = index.next;
+            } else {
+                Node i = new Node(index, index.next, filter);
+                index.next = i;
+                index.next.prev = i;
+            }
+        } while (index.hasNext());
+    }
 
     class Node<T> {
 

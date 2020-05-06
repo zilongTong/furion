@@ -9,6 +9,7 @@ import org.furion.core.filter.filters.RouteFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
 /**
  * 对外部用户的统一入口。
  */
@@ -27,7 +28,7 @@ public class FurionGatewayContext implements GatewayContext {
     private Class PROJECT_MAIN_CLASS;
 
 
-    public  FurionFilterRegistry getRegistry() {
+    public FurionFilterRegistry getRegistry() {
         if (registry == null) {
             registry = new FurionFilterRegistry(new RouteFilter());
         }
@@ -44,9 +45,13 @@ public class FurionGatewayContext implements GatewayContext {
 
     public static FurionGatewayContext getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new FurionGatewayContext(null);
+            INSTANCE = new FurionGatewayContext((Class) null);
         }
         return INSTANCE;
+    }
+
+    public FurionGatewayContext(String... args) {
+
     }
 
     public FurionGatewayContext(Class mainClass) {
