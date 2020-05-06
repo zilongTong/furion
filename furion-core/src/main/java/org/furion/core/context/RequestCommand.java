@@ -8,6 +8,9 @@ import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
+import okhttp3.Request;
+import org.furion.core.enumeration.ProtocolType;
+import org.furion.core.exception.UnSupportProtocolTypeException;
 import org.furion.core.utils.id.GeneratorEnum;
 import org.furion.core.utils.id.KeyGeneratorFactory;
 
@@ -28,6 +31,11 @@ public class RequestCommand {
 
     private FullHttpRequest request;
 
+    private RequestWrapper nettyRequest;
+
+    private RequestWrapper okHttpRequest;
+
+
     public Long getRequestId() {
         return requestId;
     }
@@ -36,11 +44,24 @@ public class RequestCommand {
         this.requestId = requestId;
     }
 
-    public FullHttpRequest getRequest() {
-        return request;
+    public RequestWrapper getNettyRequest() {
+        return nettyRequest;
     }
 
-    public void setRequest(FullHttpRequest request) {
+    public void setNettyRequest(RequestWrapper nettyRequest) {
+        this.nettyRequest = nettyRequest;
+    }
+
+    public RequestWrapper getOkHttpRequest() {
+        return okHttpRequest;
+    }
+
+    public void setOkHttpRequest(RequestWrapper okHttpRequest) {
+        this.okHttpRequest = okHttpRequest;
+    }
+
+    public RequestCommand(Long requestId, FullHttpRequest request) {
+        this.requestId = requestId;
         this.request = request;
     }
 
@@ -55,22 +76,55 @@ public class RequestCommand {
         this.content = content;
         this.requestId = requestId;
         this.requestId = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
-        builder();
     }
 
-    public void builder() {
+    public RequestCommand builder() {
+        nettyRequestBuilder();
+        okHttpRequestBuilder();
+        return this;
+    }
+
+    public void nettyRequestBuilder() {
         try {
-            request = new DefaultFullHttpRequest(httpVersion, method,
-                    uri.toASCIIString(), Unpooled.wrappedBuffer(content.getBytes("UTF-8")));
-            request.headers().set(HttpHeaderNames.HOST, host);
-            request.headers().set(REQUEST_ID, requestId);
-            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
-            request.headers().set(HttpHeaderNames.CONTENT_LENGTH, request.content().readableBytes());
-            request.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
-        } catch (UnsupportedEncodingException e) {
+//            FullHttpRequest fullHttpRequest = new DefaultFullHttpRequest(httpVersion, method,
+//                    uri.toASCIIString(), Unpooled.wrappedBuffer(content.getBytes("UTF-8")));
+//            fullHttpRequest.headers().set(HttpHeaderNames.HOST, host);
+//            fullHttpRequest.headers().set(REQUEST_ID, requestId);
+//            fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+//            fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
+            nettyRequest = new RequestWrapper().nettyWrapper(request);
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public void okHttpRequestBuilder() {
+        try {
+//            FullHttpRequest fullHttpRequest = new DefaultFullHttpRequest(httpVersion, method,
+//                    uri.toASCIIString(), Unpooled.wrappedBuffer(content.getBytes("UTF-8")));
+//            fullHttpRequest.headers().set(HttpHeaderNames.HOST, host);
+//            fullHttpRequest.headers().set(REQUEST_ID, requestId);
+//            fullHttpRequest.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+//            fullHttpRequest.headers().set(HttpHeaderNames.CONTENT_LENGTH, fullHttpRequest.content().readableBytes());
+            okHttpRequest = new RequestWrapper().okHttpWrapper(null);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public RequestWrapper getRequest(ProtocolType type) {
+        if (type == ProtocolType.NETTY) {
+            return nettyRequest;
+        }
+        if (type == ProtocolType.OK_HTTP) {
+            return okHttpRequest;
+        }
+        throw new UnSupportProtocolTypeException(type);
+
+    }
 
 }

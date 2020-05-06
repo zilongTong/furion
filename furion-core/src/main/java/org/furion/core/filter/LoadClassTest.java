@@ -38,7 +38,9 @@ public class LoadClassTest {
     public static void main(String[] args) {
         File f = new File(filePath);
         LClassLoader classLoader = new LClassLoader(f);
+        LClassLoader classLoader1 = new LClassLoader(f);
         newInstance(classLoader);
+        newInstance(classLoader1);
     }
 
 }

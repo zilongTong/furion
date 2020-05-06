@@ -8,13 +8,13 @@ package org.furion.core.context;
  */
 public class RequestLRUContext {
 
-    private static ConcurrentLRUHashMap<Long, FurionRequest> furionRequestMap = new ConcurrentLRUHashMap<Long, FurionRequest>(10240);
+    private static ConcurrentLRUHashMap<Long, RequestCommand> furionRequestMap = new ConcurrentLRUHashMap<Long, RequestCommand>(10240);
 
-    public static void add(Long requestId, FurionRequest request) {
+    public static void add(Long requestId, RequestCommand request) {
         furionRequestMap.put(requestId, request);
     }
 
-    public static FurionRequest get(Long requestId) {
+    public static RequestCommand get(Long requestId) {
         return furionRequestMap.get(requestId);
     }
 

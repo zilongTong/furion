@@ -34,27 +34,26 @@ public class FurionFilterRegistry {
                 routeFilter = temp;
                 headFilter = node;
             } else {
-                Node<FurionFilter> index = headFilter;
-                do {
-                    if (index.item.compareTo(filter) > 0) {
-                        index = index.next;
-                    } else {
-                        
-                    }
-                } while (index.hasNext());
+                insertNode(filter, headFilter);
             }
         }
-
         if (FilterType.POST.name().equalsIgnoreCase(filter.filterType())) {
-
-
-            Node temp = headFilter;
-
-//            Node<FurionFilter> node = new Node<>(temp, filter);
-//            headFilter = node;
+            insertNode(filter, routeFilter);
         }
     }
 
+    private void insertNode(FurionFilter filter, Node<FurionFilter> headFilter) {
+        Node<FurionFilter> index = headFilter;
+        do {
+            if (index.item.compareTo(filter) > 0) {
+                index = index.next;
+            } else {
+                Node i = new Node(index, index.next, filter);
+                index.next = i;
+                index.next.prev = i;
+            }
+        } while (index.hasNext());
+    }
 
     class Node<T> {
 

@@ -1,14 +1,11 @@
 package org.furion.core.context;
 
 import org.furion.core.context.properties.PropertiesManager;
-import org.furion.core.filter.FilterType;
 import org.furion.core.filter.FurionFilter;
 import org.furion.core.filter.FurionFilterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-import java.util.TreeSet;
 
 public class FurionGatewayContext implements GatewayContext {
 
@@ -27,7 +24,7 @@ public class FurionGatewayContext implements GatewayContext {
         FurionGatewayContext.registry = registry;
     }
 
-    public FurionGatewayContext() {
+    public FurionGatewayContext(String... args) {
         propertiesManager = PropertiesManager.getInstance();
         furionProperties = new FurionProperties();
         init();

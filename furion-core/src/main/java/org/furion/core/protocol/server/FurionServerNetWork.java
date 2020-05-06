@@ -310,9 +310,5 @@ public class FurionServerNetWork implements FurionHttpServer {
     }
 
 
-    public static void main(String[] args) {
-        FurionServerNetWork furionServerNetWork = FurionServerNetWork.bootstrap().withPort(8888).start();
-
-    }
 
 }

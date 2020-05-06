@@ -5,6 +5,7 @@ import org.furion.core.bean.eureka.Server;
 import org.furion.core.context.FurionResponse;
 import org.furion.core.context.RequestCommand;
 import org.furion.core.context.RequestLRUContext;
+import org.furion.core.context.RequestWrapper;
 import org.furion.core.enumeration.ProtocolType;
 import org.furion.core.exception.FurionException;
 import org.furion.core.protocol.client.http.HttpNetFactory;
@@ -33,9 +34,7 @@ public class RouteFilter extends FurionFilter {
     public Object run() throws FurionException {
         getCurrentExclusiveOwnerChannel();
         Long requestId = getCurrentExclusiveOwnerRequestId();
-        RequestCommand command = new RequestCommand();
-        command.setRequestId(requestId);
-        command.setRequest(RequestLRUContext.get(requestId).getRequest());
+        RequestCommand command = RequestLRUContext.get(requestId).builder();
         HttpNetWork httpNetWork = HttpNetFactory.fetchProcessor(ProtocolType.NETTY, new Server("127.0.0.1", 8080));
         FurionResponse response = (FurionResponse) httpNetWork.send(command);
 //        ChannelFuture future = channel.writeAndFlush();

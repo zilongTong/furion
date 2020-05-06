@@ -14,7 +14,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
     protected void writeAndFlush(Object o) {
         getCurrentExclusiveOwnerChannel().writeAndFlush(o);
         setCurrentExclusiveOwnerWhetherWriteAndFlush(true);
-        releaseThreadLocal();
+        releaseCurrentThreadLocal();
         //ReferenceCountUtil.release(o);
     }
 
@@ -116,7 +116,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
     }
 
 
-    protected void releaseThreadLocal() {
+    protected void releaseCurrentThreadLocal() {
         filterExclusiveOwnerThreadLocal.remove();
     }
 

@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2019-12-31
  */
 @Slf4j
-public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse> {
+public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionResponse> {
 
     private static Long requestTimeout = 10000L;
     private static int port;
@@ -55,7 +55,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
     private Bootstrap bootstrap = new Bootstrap();
 
 
-    public ClientNetWork(HashedWheelTimer t, Server s) {
+    public NettyClientNetWork(HashedWheelTimer t, Server s) {
         server = s;
         timer = t;
         this.host = server.getHost();
@@ -91,7 +91,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
         while (true) {
             Channel channel = ClientChannelLRUContext.get(key);
             if (channel != null) {
-                channel.writeAndFlush(requestCommand.getRequest());
+                channel.writeAndFlush(requestCommand.getRequest(ProtocolType.NETTY).getNettyRequest());
                 break;
             }
             connect();
@@ -155,7 +155,7 @@ public class ClientNetWork implements HttpNetWork<RequestCommand, FurionResponse
 //            setCommand(request);
 
 
-            httpNetWork.send(request.getRequest());
+            httpNetWork.send(request);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
