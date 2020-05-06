@@ -22,7 +22,7 @@ public class ClientChannelLRUContext {
     private static ConcurrentHashMap<SocketChannel,FurionSocketChannel> isUsedChannel = new ConcurrentHashMap<>();
 
     public static void add(String clientId, SocketChannel channel) {
-        if(!socketChannelMap.contains(clientId))
+        if(!socketChannelMap.containsKey(clientId))
             socketChannelMap.put(clientId,new ArrayList<>());
         socketChannelMap.get(clientId).add(new FurionSocketChannel(channel,true));
     }

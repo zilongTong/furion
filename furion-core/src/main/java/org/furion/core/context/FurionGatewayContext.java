@@ -1,41 +1,65 @@
 package org.furion.core.context;
 
 import org.furion.core.context.properties.PropertiesManager;
+import org.furion.core.filter.FilterManager;
 import org.furion.core.filter.FilterType;
 import org.furion.core.filter.FurionFilter;
 import org.furion.core.filter.FurionFilterRegistry;
-import org.furion.core.filter.RouteFilter;
+import org.furion.core.filter.filters.RouteFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
-import java.util.TreeSet;
-
+/**
+ * 对外部用户的统一入口。
+ */
 public class FurionGatewayContext implements GatewayContext {
 
     private static final Logger LOG = LoggerFactory.getLogger(FurionGatewayContext.class);
+    private static FurionGatewayContext INSTANCE;
     private PropertiesManager propertiesManager;
     private FurionProperties furionProperties;
+    private FilterManager filterManager;
+    private FurionFilterRegistry registry;
+    /**
+     * 用户启动程序所在Main class.
+     * 扫描此class package下的 Filter 加载。
+     */
+    private Class PROJECT_MAIN_CLASS;
 
-    private static FurionFilterRegistry registry;
 
-
-    public static FurionFilterRegistry getRegistry() {
-        if(registry == null){
+    public  FurionFilterRegistry getRegistry() {
+        if (registry == null) {
             registry = new FurionFilterRegistry(new RouteFilter());
         }
         return registry;
     }
 
-    public static void setRegistry(FurionFilterRegistry registry) {
-        FurionGatewayContext.registry = registry;
+//    public FurionFilterRegistry getRegistry() {
+//        return registry;
+//    }
+
+    public Class mainClass() {
+        return getInstance().PROJECT_MAIN_CLASS;
     }
 
-    public FurionGatewayContext() {
+    public static FurionGatewayContext getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new FurionGatewayContext(null);
+        }
+        return INSTANCE;
+    }
+
+    public FurionGatewayContext(Class mainClass) {
+        INSTANCE = this;
+        if (mainClass == null) {
+            mainClass = FurionGatewayContext.class;
+        }
+        PROJECT_MAIN_CLASS = mainClass;
         propertiesManager = PropertiesManager.getInstance();
+        filterManager = FilterManager.getInstance();
+        registry = FurionFilterRegistry.getInstance();
         furionProperties = new FurionProperties();
         init();
-        refresh();
     }
 
     public static void main(String[] args) {
@@ -43,28 +67,14 @@ public class FurionGatewayContext implements GatewayContext {
     }
 
     private void init() {
+        propertiesManager.init();
+        filterManager.init();
+    }
+
+    public void start() {
 
     }
 
-    /**
-     * 加载Filter
-     */
-    public void refresh() {
-
-
-    }
-
-
-//    @Override
-//    public Set<FurionFilter> getFilterSetByType(FilterType filterType) {
-//        if (FilterType.POST == filterType) {
-//            return postFilters;
-//        } else if (FilterType.PRE == filterType) {
-//            return preFilters;
-//        }
-//        throw new RuntimeException("invalid filterType:" + filterType);
-//
-//    }
 
     @Override
     public void addFilter(FurionFilter filter) {

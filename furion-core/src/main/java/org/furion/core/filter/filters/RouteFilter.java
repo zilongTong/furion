@@ -1,4 +1,4 @@
-package org.furion.core.filter;
+package org.furion.core.filter.filters;
 
 
 import io.netty.channel.ChannelFuture;
@@ -8,6 +8,7 @@ import org.furion.core.bean.eureka.Server;
 import org.furion.core.context.*;
 import org.furion.core.enumeration.ProtocolType;
 import org.furion.core.exception.FurionException;
+import org.furion.core.filter.FurionFilter;
 import org.furion.core.protocol.client.http.HttpNetFactory;
 import org.furion.core.protocol.client.http.HttpNetWork;
 import org.furion.core.ribbon.AbstractLoadBalancerRule;
@@ -68,6 +69,8 @@ public class RouteFilter extends FurionFilter {
 
         }
         String u = uri.replace("/spi", "");
+        if(u.endsWith("ico"))
+            return null;
         String urlOrServiceId = getServiceId(u);
 
         Server server;
@@ -119,6 +122,7 @@ public class RouteFilter extends FurionFilter {
                 }
             }
         }catch (Exception e){}
+        System.out.println(targetUrl);
         return targetUrl.substring(1, targetUrl.indexOf("/", 1));
     }
 

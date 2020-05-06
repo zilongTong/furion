@@ -6,12 +6,15 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.furion.core.annotation.Ignore;
 import org.furion.core.annotation.PropertiesObject;
+import org.furion.core.annotation.PropertiesAutoRefresh;
 import org.furion.core.context.properties.convert.PrimitiveConverter;
 import org.furion.core.context.properties.convert.StringConverter;
 import org.furion.core.context.properties.convert.TypeConvert;
 import org.furion.core.enumeration.PropertiesSource;
 import org.furion.core.enumeration.PropertyValueChangeType;
+import org.furion.core.utils.ClassUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,6 +26,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author wplin
@@ -31,9 +36,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public final class PropertiesManager implements IPropertiesManager {
-
+    private AtomicInteger integer = new AtomicInteger(1);
     private static PropertiesManager propertiesManager;
-    private static final ConcurrentHashMap<Class, IPropertiesContainer> containerMap = new ConcurrentHashMap<>();
+    //保存所有PropertiesContainer,
+    private static final ConcurrentHashMap<String, IPropertiesContainer> containerMap = new ConcurrentHashMap<>();
     /**
      * init()方法后，将所有的Properties 按照优先级读取所有K-v 构建Add事件，当有IPropertiesContainer注册时，立即执行refresh()
      */
@@ -52,15 +58,12 @@ public final class PropertiesManager implements IPropertiesManager {
      */
     private Properties netProperties;
 
-    private static Set<TypeConvert> converter = Sets.newHashSet(new StringConverter(), new PrimitiveConverter());
-
     /**
      * 单例实现 后期再优化
      */
     public static PropertiesManager getInstance() {
         if (propertiesManager == null) {
             propertiesManager = new PropertiesManager();
-            propertiesManager.init();
         }
         return propertiesManager;
     }
@@ -72,7 +75,7 @@ public final class PropertiesManager implements IPropertiesManager {
     }
 
 
-    private void init() {
+    public void init() {
         //加载。保持顺序
         loadPropsFromSystem();
         loadPropsFromLocalFile();
@@ -137,7 +140,7 @@ public final class PropertiesManager implements IPropertiesManager {
      */
     @Override
     public void register(IPropertiesContainer container) {
-        containerMap.put(container.getClass(), container);
+        containerMap.put(container.getClass().getName() + integer.getAndIncrement(), container);
         initPropertiesObject(container);
         container.refresh(allInitValue);
     }
@@ -157,7 +160,13 @@ public final class PropertiesManager implements IPropertiesManager {
         Field[] fields = aClass.getDeclaredFields();
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
-
+            Class<?> type = field.getType();
+            if (type.getAnnotation(Ignore.class) != null) {
+                continue;
+            }
+            if (type == Object.class) {
+                continue;
+            }
             if (Modifier.isFinal(field.getModifiers())) {
                 continue;
             }
@@ -171,7 +180,8 @@ public final class PropertiesManager implements IPropertiesManager {
         String key = prefix + field.getName();
         Class<?> type = field.getType();
         Object propertyValue = null;
-        if (singleValue(type)) {
+
+        if (ClassUtil.isSingleType(type)) {
             propertyValue = getSinglePropertyValue(key, type);
         } else if (Collection.class.isAssignableFrom(type)) {
             propertyValue = getCollectionPropertyValue(key, (Class<? extends Collection>) type);
@@ -196,15 +206,6 @@ public final class PropertiesManager implements IPropertiesManager {
         }
     }
 
-
-    @Override
-    public <T> T getPropertiesContainer(Class<? extends IPropertiesContainer> c) {
-        IPropertiesContainer container = containerMap.get(c);
-        if (container == null) {
-            return null;
-        }
-        return (T) container;
-    }
 
     /**
      * Properties 接收外部更新
@@ -279,18 +280,21 @@ public final class PropertiesManager implements IPropertiesManager {
             }
         });
 
-
+        //更新原Properties
+        old.putAll(n);
+        //删除key
+        deleteKey.forEach(old::remove);
         /*
             循环通知所有 PropertiesContainer进行更新
          */
         containerMap.forEach((k, v) -> {
             v.refresh(list);
+            //自动刷新值
+            if (v.getClass().getAnnotation(PropertiesAutoRefresh.class) != null) {
+                initPropertiesObject(v);
+            }
         });
 
-        //更新原Properties
-        old.putAll(n);
-        //删除key
-        deleteKey.forEach(old::remove);
 
     }
 
@@ -306,15 +310,17 @@ public final class PropertiesManager implements IPropertiesManager {
     @Override
     public <V> V getSinglePropertyValue(String key, Class<V> tClass) {
         //单值 类型
-        if (singleValue(tClass)) {
+        if (ClassUtil.isSingleType(tClass)) {
             String value = getStringValue(key);
             if (StringUtils.isNotBlank(value)) {
                 return (V) buildSingleValue(tClass, value);
             }
+        } else {
+            System.out.println("暂不支持 支持此种类型 " + tClass.getName());
         }
-        System.out.println("暂不支持 支持此种类型");
         return null;
     }
+
 
     @Override
     public Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass) {
@@ -385,7 +391,7 @@ public final class PropertiesManager implements IPropertiesManager {
                     //填充o 的值，目前只支持 单值 类型
                     Field field = o.getClass().getDeclaredField(fieldName);
                     if (field != null) {
-                        if (singleValue(field.getType())) {
+                        if (ClassUtil.isSingleType(field.getType())) {
                             field.setAccessible(true);
                             field.set(o, buildSingleValue(field.getType(), value));
                         }
@@ -414,7 +420,7 @@ public final class PropertiesManager implements IPropertiesManager {
         } else if (typeCheck(tClass, String.class)) {
             return value;
         } else {
-            return null;
+            throw new RuntimeException("类型不支持" + tClass.getName());
         }
 
     }
@@ -443,13 +449,6 @@ public final class PropertiesManager implements IPropertiesManager {
         return arr;
     }
 
-    /**
-     * 单值类型：String，基础类型
-     */
-    private boolean singleValue(Class type) {
-        return type.isPrimitive() ||
-                type == String.class;
-    }
 
     private boolean typeCheck(Class type, Class... target) {
         for (Class item : target) {
@@ -462,13 +461,8 @@ public final class PropertiesManager implements IPropertiesManager {
 
     private String getStringValue(String key) {
         String value = localProperties.getProperty(key);
-
-        if (systemProperties.containsKey(key)) {
-            value = systemProperties.getProperty(key);
-        }
-        if (netProperties.containsKey(key)) {
-            value = netProperties.getProperty(key);
-        }
+        value = systemProperties.getProperty(key, value);
+        value = netProperties.getProperty(key, value);
         return value;
     }
 

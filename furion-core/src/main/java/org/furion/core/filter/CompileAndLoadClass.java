@@ -1,25 +1,24 @@
 package org.furion.core.filter;
 
+import com.google.common.collect.Sets;
+
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
 
 
-public class LoadClassTest {
+public class CompileAndLoadClass {
+    private static String filePath = "";
 
-
-    static String filePath = "/Users/zilong/Downloads";
-
-    public static Object newInstance(LClassLoader classLoader) {
+    public static Class newInstance(File file, LClassLoader classLoader) {
 
         try {
 
-            filePath = filePath + "/LeoRouteFilter.java";
-            File f = new File(filePath);
+
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             StandardJavaFileManager manage = compiler.getStandardFileManager(null, null, null);
-            Iterable iterable = manage.getJavaFileObjects(f);
+            Iterable iterable = manage.getJavaFileObjects(file);
 
             JavaCompiler.CompilationTask task = compiler.getTask(null, manage, null, null, null, iterable);
             task.call();
@@ -37,8 +36,8 @@ public class LoadClassTest {
 
     public static void main(String[] args) {
         File f = new File(filePath);
-        LClassLoader classLoader = new LClassLoader(f);
-        newInstance(classLoader);
+        LClassLoader classLoader = new LClassLoader(Sets.newHashSet(f));
+        newInstance(f, classLoader);
     }
 
 }

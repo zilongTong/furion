@@ -1,10 +1,11 @@
 package org.furion.core.filter;
 
 import org.furion.core.exception.UnknownFurionFilterException;
+import org.furion.core.filter.filters.RouteFilter;
 
-public class FurionFilterRegistry {
+public final class FurionFilterRegistry {
 
-
+    private static FurionFilterRegistry INSTANCE;
     private Node<FurionFilter> headFilter;
 
     private Node<FurionFilter> routeFilter;
@@ -17,7 +18,14 @@ public class FurionFilterRegistry {
         this.headFilter = headFilter;
     }
 
-    public FurionFilterRegistry(Node<FurionFilter> headFilter) {
+    public static FurionFilterRegistry getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new FurionFilterRegistry((Node)null);
+        }
+        return INSTANCE;
+    }
+
+    private FurionFilterRegistry(Node<FurionFilter> headFilter) {
         this.headFilter = new Node<>(null, null, new RouteFilter());
         this.routeFilter = headFilter;
     }
@@ -25,7 +33,14 @@ public class FurionFilterRegistry {
     //todo: for test
     public FurionFilterRegistry(FurionFilter headFilter) {
         this.headFilter = new Node<>(null, null, new RouteFilter());
-        this.routeFilter = new Node<>(null,null,headFilter);
+        this.routeFilter = new Node<>(null, null, headFilter);
+    }
+
+        /**
+         * 删除原Filter对应的实例 TODO
+         */
+    public void registerFilter(String key, FurionFilter filter) {
+        System.out.println("Filter注册 key:" + key + ",filterName:" + filter.getClass().getName());
     }
 
     public void registerFilter(FurionFilter filter) {
@@ -45,7 +60,7 @@ public class FurionFilterRegistry {
                     if (index.item.compareTo(filter) > 0) {
                         index = index.next;
                     } else {
-                        
+
                     }
                 } while (index.hasNext());
             }
