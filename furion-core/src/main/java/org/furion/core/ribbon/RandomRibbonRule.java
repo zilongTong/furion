@@ -5,6 +5,7 @@ import org.furion.core.bean.eureka.Server;
 import org.furion.core.discovery.EurekaNetWork;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @SpiMetadata(name = "RandomRibbon")
 public class RandomRibbonRule extends AbstractLoadBalancerRule {
@@ -13,10 +14,8 @@ public class RandomRibbonRule extends AbstractLoadBalancerRule {
     public Server choose(String key) {
         List<Server> serverList = EurekaNetWork.getServerList(key);
         if (!serverList.isEmpty())
-//            return serverList.get(ThreadLocalRandom.current().nextInt(serverList.size()));
-            return serverList.get(5);//for test
+            return serverList.get(ThreadLocalRandom.current().nextInt(serverList.size()));
         return null;
-//        return new Server("127.0.0.1",3001);
     }
 }
 

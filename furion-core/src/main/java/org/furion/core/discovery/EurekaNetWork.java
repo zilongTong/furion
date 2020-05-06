@@ -87,8 +87,10 @@ public class EurekaNetWork {
                     newMap.put(serviceBean.getServiceName(),new ArrayList<>());
                     final List<Server> serverList = newMap.get(serviceBean.getServiceName());
                     serviceBean.getInstanceBeans().forEach(instanceBean -> {
-                        Server server = new Server(instanceBean.getHostName(),Integer.valueOf(instanceBean.getPort()));
-                        serverList.add(server);
+                        if("UP".equals(instanceBean.getStatus())) {
+                            Server server = new Server(instanceBean.getHostName(), Integer.valueOf(instanceBean.getPort()));
+                            serverList.add(server);
+                        }
                     });
                 });
                 serverListMap = newMap;
