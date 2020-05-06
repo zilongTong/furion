@@ -1,7 +1,5 @@
 package org.furion.core.filter;
 
-import org.furion.core.filter.load.LocalFileFilterLoader;
-
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
@@ -18,7 +16,7 @@ public class FurionCompiler {
         this.filePath = filePath;
     }
 
-    public void dynamicFilterCompile(LocalFileFilterLoader classLoader) {
+    public void dynamicFilterCompile() {
         try {
 
             //.java

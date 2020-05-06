@@ -1,6 +1,7 @@
 package org.furion.core.filter;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import org.furion.core.exception.FilterExclusiveThreadLocalReleasedException;
 import org.furion.core.exception.FurionException;
 
@@ -11,10 +12,11 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
     public FurionFilter() {
     }
 
-    protected void writeAndFlush(Object o) {
-        getCurrentExclusiveOwnerChannel().writeAndFlush(o);
+    protected ChannelFuture writeAndFlush(Object o) {
+        ChannelFuture future = getCurrentExclusiveOwnerChannel().writeAndFlush(o);
         setCurrentExclusiveOwnerWhetherWriteAndFlush(true);
         releaseCurrentThreadLocal();
+        return future;
         //ReferenceCountUtil.release(o);
     }
 
@@ -71,9 +73,11 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
         return false;
     }
 
+    //todo: for test
     protected boolean shouldFilter0() {
         if (filterType().equalsIgnoreCase(FilterType.PRE.name())) {
-            return shouldFilter() && getCurrentExclusiveOwnerWhetherWriteAndFlush();
+//            return shouldFilter() && getCurrentExclusiveOwnerWhetherWriteAndFlush();
+            return shouldFilter();
         }
         if (filterType().equalsIgnoreCase(FilterType.POST.name())) {
             return shouldFilter();

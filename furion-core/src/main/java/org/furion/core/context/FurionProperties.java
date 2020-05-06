@@ -17,7 +17,7 @@ public class FurionProperties extends BasePropertiesContainer {
     private String prefix = "furion";
     private boolean stripPrefix = true;
     private Boolean retryable = false;
-    private Map<String, FurionProperties.FurionRoute> routes = new LinkedHashMap();
+    private Map<String, List<FurionProperties.FurionRoute>> routes = new LinkedHashMap();
     private boolean addProxyHeaders = true;
     private boolean addHostHeader = false;
     private Set<String> ignoredServices = new LinkedHashSet();
@@ -65,11 +65,11 @@ public class FurionProperties extends BasePropertiesContainer {
         this.retryable = retryable;
     }
 
-    public Map<String, FurionProperties.FurionRoute> getRoutes() {
+    public Map<String, List<FurionProperties.FurionRoute>> getRoutes() {
         return this.routes;
     }
 
-    public void setRoutes(Map<String, FurionProperties.FurionRoute> routes) {
+    public void setRoutes(Map<String, List<FurionProperties.FurionRoute>> routes) {
         this.routes = routes;
     }
 
@@ -201,8 +201,7 @@ public class FurionProperties extends BasePropertiesContainer {
     }
 
 
-
-    public class FurionRoute {
+    public static class FurionRoute {
         private String id;
         private String path;
         private String serviceId;
@@ -317,6 +316,7 @@ public class FurionProperties extends BasePropertiesContainer {
         }
 
 
+        @Override
         public String toString() {
             return "FurionRoute{" + "id='" + this.id + "', " + "path='" + this.path + "', " + "serviceId='" + this.serviceId + "', " + "url='" + this.url + "', " + "stripPrefix=" + this.stripPrefix + ", " + "retryable=" + this.retryable + ", " + "sensitiveHeaders=" + this.sensitiveHeaders + ", " + "customSensitiveHeaders=" + this.customSensitiveHeaders + ", " + "}";
         }

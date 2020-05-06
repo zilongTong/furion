@@ -1,0 +1,2 @@
+org.furion.core.ribbon.RandomRibbonRule
+org.furion.core.ribbon.RoundRibbonRule

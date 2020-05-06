@@ -36,6 +36,14 @@ public class RequestCommand {
     private RequestWrapper okHttpRequest;
 
 
+    public FullHttpRequest getRequest() {
+        return request;
+    }
+
+    public void setRequest(FullHttpRequest request) {
+        this.request = request;
+    }
+
     public Long getRequestId() {
         return requestId;
     }
@@ -116,7 +124,7 @@ public class RequestCommand {
     }
 
 
-    public RequestWrapper getRequest(ProtocolType type) {
+    public RequestWrapper getRequestWrapper(ProtocolType type) {
         if (type == ProtocolType.NETTY) {
             return nettyRequest;
         }

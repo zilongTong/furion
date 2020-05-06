@@ -123,7 +123,8 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     private void channelRead1(ChannelHandlerContext ctx, Object httpObject)
             throws Exception {
         System.out.println("FurionClientHandler read..............");
-        Channel channel = ctx.channel();
+        ClientChannelLRUContext.setFree((SocketChannel) ctx.channel());
+
         FurionResponse result = new FurionResponse();
         ByteBuf buf = Unpooled.EMPTY_BUFFER;
         String contentType = StringUtils.EMPTY;
@@ -184,7 +185,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
 
-        System.out.println("当前链路已经激活了，重连尝试次数重新置为0");
+//        System.out.println("当前链路已经激活了，重连尝试次数重新置为0");
         attempts = 0;
         //判断连接结果，如果没有连接成功，则监听连接网络操作位SelectionKey.OP_CONNECT。如果连接成功，则调用pipeline().fireChannelActive()将监听位修改为READ。
         ctx.fireChannelActive();

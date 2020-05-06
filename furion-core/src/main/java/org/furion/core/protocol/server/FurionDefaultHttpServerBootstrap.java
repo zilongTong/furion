@@ -269,7 +269,7 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
         stopWatch.start();
         FurionGatewayContext context = new FurionGatewayContext(args);
         try {
-            context.refresh();
+//            context.refresh();
             this.withPort(8080).start();
             stopWatch.stop();
             return context;
