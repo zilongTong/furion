@@ -1,5 +1,6 @@
 package org.furion.core.context;
 
+import org.furion.core.annotation.Ignore;
 import org.furion.core.context.properties.BasePropertiesContainer;
 import org.furion.core.context.properties.IPropertyValueChangeEvent;
 
@@ -17,6 +18,7 @@ public class FurionProperties extends BasePropertiesContainer {
     private String prefix = "furion";
     private boolean stripPrefix = true;
     private Boolean retryable = false;
+    @Ignore
     private Map<String, List<FurionProperties.FurionRoute>> routes = new LinkedHashMap();
     private boolean addProxyHeaders = true;
     private boolean addHostHeader = false;
