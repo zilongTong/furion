@@ -13,11 +13,11 @@ import java.util.Set;
  */
 public class LClassLoader extends ClassLoader {
     private boolean hasUsed = false;
-    private Set<File> classPathFile;
+    private Set<File> classFiles;
     private volatile File currentClassFile;
 
-    public LClassLoader(Set<File> classPathFile) {
-        this.classPathFile = classPathFile;
+    public LClassLoader(Set<File> classFiles) {
+        this.classFiles = classFiles;
     }
 
     @Override
@@ -36,7 +36,7 @@ public class LClassLoader extends ClassLoader {
                 while ((len = in.read(buff)) != -1) {
                     out.write(buff, 0, len);
                 }
-                return defineClass(className, out.toByteArray(), 0, out.size());
+                return defineClass(null, out.toByteArray(), 0, out.size());
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -66,13 +66,13 @@ public class LClassLoader extends ClassLoader {
             throw new RuntimeException("类加载器必须重新实例化");
         }
         Set<Class<?>> classes = Sets.newHashSet();
-        if (classPathFile != null && !classPathFile.isEmpty()) {
-            int index = 0;
-            for (File item : classPathFile) {
+        if (classFiles != null && !classFiles.isEmpty()) {
+            for (File item : classFiles) {
                 this.currentClassFile = item;
-                //+ System.currentTimeMillis() % 100 + "$" + index
-                classes.add(findClass(item.getName()));
-                index++;
+                Class<?> aClass = findClass(item.getName());
+                if(aClass!=null){
+                    classes.add(aClass);
+                }
             }
         }
         hasUsed = true;

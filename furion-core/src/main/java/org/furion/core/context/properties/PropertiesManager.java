@@ -177,31 +177,33 @@ public final class PropertiesManager implements IPropertiesManager {
 
 
     private void setFieldValue(IPropertiesContainer container, String prefix, Field field) {
-        String key = prefix + field.getName();
-        Class<?> type = field.getType();
-        Object propertyValue = null;
-
-        if (ClassUtil.isSingleType(type)) {
-            propertyValue = getSinglePropertyValue(key, type);
-        } else if (Collection.class.isAssignableFrom(type)) {
-            propertyValue = getCollectionPropertyValue(key, (Class<? extends Collection>) type);
-        } else if (Map.class.isAssignableFrom(type)) {
-            //获取V类型
-            ParameterizedType genericType = (ParameterizedType) field.getGenericType();
-            Type keyType = genericType.getActualTypeArguments()[0];
-            //只支持 key 为String 类型
-            if (keyType == String.class) {
-                Type value = genericType.getActualTypeArguments()[1];
-                propertyValue = getMapPropertyValue(key, (Class<? extends Map>) type, (Class) value);
-            }
-        }
-
-        if (propertyValue == null) {
-            return;
-        }
         try {
+            String key = prefix + field.getName();
+            Class<?> type = field.getType();
+            Object propertyValue = null;
+
+            if (ClassUtil.isSingleType(type)) {
+                propertyValue = getSinglePropertyValue(key, type);
+            } else if (Collection.class.isAssignableFrom(type)) {
+                propertyValue = getCollectionPropertyValue(key, (Class<? extends Collection>) type);
+            } else if (Map.class.isAssignableFrom(type)) {
+                //获取V类型
+                ParameterizedType genericType = (ParameterizedType) field.getGenericType();
+                Type keyType = genericType.getActualTypeArguments()[0];
+                //只支持 key 为String 类型
+                if (keyType == String.class) {
+                    Type value = genericType.getActualTypeArguments()[1];
+                    propertyValue = getMapPropertyValue(key, (Class<? extends Map>) type, (Class) value);
+                }
+            }
+
+            if (propertyValue == null) {
+                return;
+            }
+
             field.set(container, propertyValue);
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
+            System.out.println(container.getClass().getName() + field.getName());
             e.printStackTrace();
         }
     }
@@ -471,6 +473,7 @@ public final class PropertiesManager implements IPropertiesManager {
      * 获取以某种key开头\结尾的所有 配置项
      */
     private Map<String, String> getListValue(String keyPrefix, String keySuffix) {
+
         Map<String, String> map = Maps.newHashMap();
         doGetListValue(keyPrefix, keySuffix, map, localProperties);
         doGetListValue(keyPrefix, keySuffix, map, systemProperties);
