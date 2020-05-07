@@ -108,7 +108,7 @@ public final class FilterManager {
                 if (FurionFilter.class.isAssignableFrom(filter)) {
                     try {
                         Object o = filter.newInstance();
-                        filterRegistry.registerFilter(fileAbsolutePath, (FurionFilter) o);
+                        filterRegistry.registerFilter(filter.getName(), (FurionFilter) o);
                         return;
                     } catch (InstantiationException e) {
                         e.printStackTrace();
