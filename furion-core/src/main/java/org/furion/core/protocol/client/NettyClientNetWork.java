@@ -50,6 +50,7 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
     private final HashedWheelTimer timer;
     private static final ObjectMapper mapper = new ObjectMapper();
     private final Server server;
+    private volatile boolean isConncted = false;
 
 
     private Bootstrap bootstrap = new Bootstrap();
@@ -63,20 +64,27 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
     }
 
 
-    private void connect() {
+    private synchronized void connect() {
+        if(!isConncted) {
 //        FurionClientHandler handler = new FurionClientHandler(bootstrap, timer, server, true);
-        EventLoopGroup group = new NioEventLoopGroup();
-        String keyString = host.concat(":").concat(String.valueOf(port));
-        bootstrap.group(group).channel(NioSocketChannel.class)
-                .handler(new FurionClientChannelInitializer(bootstrap, server, timer, true))
-                .option(ChannelOption.SO_KEEPALIVE, true);
-        try {
-            for(int i=0; i<50; i++) {
-                ChannelFuture future = bootstrap.connect(host, port).sync();
-                ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
+            EventLoopGroup group = new NioEventLoopGroup();
+            String keyString = host.concat(":").concat(String.valueOf(port));
+            bootstrap.group(group).channel(NioSocketChannel.class)
+                    .handler(new FurionClientChannelInitializer(bootstrap, server, timer, true))
+                    .option(ChannelOption.SO_KEEPALIVE, true);
+            int retry = 3;
+            try {
+                for (int i = 0; i < 5 && retry > 0; i++) {
+                    ChannelFuture future = bootstrap.connect(host, port).sync();
+                    if (future.isSuccess())
+                        ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
+                    else
+                        retry--;
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            isConncted = true;
         }
     }
 
@@ -86,21 +94,23 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
         String key = host.concat(":").concat(String.valueOf(port));
         CountDownLatch waitLatch = new CountDownLatch(1);
         CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
-        while (true) {
-            Channel channel = ClientChannelLRUContext.get(key);
-            if (channel != null) {
-                channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
-                break;
-            }
+        Channel channel = ClientChannelLRUContext.get(key);
+        if(channel == null) {
             connect();
+            channel = ClientChannelLRUContext.get(key);
         }
+        if (channel != null) {
+            channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
+//            System.out.println("test");
+        }
+
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);
             FurionResponse response = ResponseLRUContext.get(requestCommand.getRequestId());
 
-            System.out.println(response);
+            System.out.println(host+" response:"+response);
             return response;
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             release(requestCommand.getRequestId());

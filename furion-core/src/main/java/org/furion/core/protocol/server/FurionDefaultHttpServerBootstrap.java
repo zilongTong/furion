@@ -2,6 +2,7 @@ package org.furion.core.protocol.server;
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.furion.core.context.FurionGatewayContext;
+import org.furion.core.discovery.EurekaNetWork;
 import org.furion.core.enumeration.ProtocolType;
 import org.furion.core.utils.FurionUtils;
 import org.slf4j.Logger;
@@ -270,6 +271,7 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
         FurionGatewayContext context = new FurionGatewayContext(args);
         try {
 //            context.refresh();
+            EurekaNetWork eurekaNetWork = new EurekaNetWork();
             this.withPort(8080).start();
             stopWatch.stop();
             return context;

@@ -161,7 +161,7 @@ public final class PropertiesManager implements IPropertiesManager {
         for (int i = 0; i < fields.length; i++) {
             Field field = fields[i];
             Class<?> type = field.getType();
-            if (type.getAnnotation(Ignore.class) != null) {
+            if (field.getAnnotation(Ignore.class) != null) {
                 continue;
             }
             if (type == Object.class) {
