@@ -42,9 +42,11 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
     private int maxInitialLineLength = MAX_INITIAL_LINE_LENGTH_DEFAULT;
     private int maxHeaderSize = MAX_HEADER_SIZE_DEFAULT;
     private int maxChunkSize = MAX_CHUNK_SIZE_DEFAULT;
+
+    private boolean bindMultiplePorts = false;
     private boolean allowRequestToOriginServer = false;
 
-    FurionDefaultHttpServerBootstrap() {
+    public FurionDefaultHttpServerBootstrap() {
     }
 
     private FurionDefaultHttpServerBootstrap(
@@ -247,7 +249,8 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
                 serverGroup,
                 protocolType,
                 determineListenAddress(),
-                localAddress);
+                localAddress,
+                bindMultiplePorts);
     }
 
     private InetSocketAddress determineListenAddress() {
@@ -257,7 +260,7 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
             // Binding only to localhost can significantly improve the
             // security of the Gateway.
             if (allowLocalOnly) {
-                return new InetSocketAddress("127.0.0.1", port);
+                return new InetSocketAddress("localhost", port);
             } else {
                 return new InetSocketAddress(port);
             }
@@ -269,7 +272,7 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
         stopWatch.start();
         FurionGatewayContext context = new FurionGatewayContext(args);
         try {
-//            context.refresh();
+//          FurionGatewayContext context1=  context.refresh();
             this.withPort(8080).start();
             stopWatch.stop();
             return context;

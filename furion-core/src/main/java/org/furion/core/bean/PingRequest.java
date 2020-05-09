@@ -32,20 +32,20 @@ public class PingRequest {
         this.port = server.getPort();
         URI uri = null;
         try {
-            uri = new URI(FurionConstants.HTTP_PRE.concat(this.host).concat(FurionConstants.SEPARATE_COLON).concat(String.valueOf(this.port)).concat("/ping"));
+            uri = new URI(FurionConstants.HTTP_PRE.concat(this.host).concat(FurionConstants.SEPARATE_COLON).concat(String.valueOf(this.port)));
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        ByteBuf content = null;
-        try {
-            content = Unpooled.wrappedBuffer("ping".getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.toASCIIString(), content);
-        request.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
+//        ByteBuf content = null;
+//        try {
+////            content = Unpooled.wrappedBuffer("ping".getBytes("UTF-8"));
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+        request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.HEAD, uri.toASCIIString());
+//        request.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
         request.headers().set(HttpHeaderNames.HOST, this.host);
-        request.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
+//        request.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());
         request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
     }
 

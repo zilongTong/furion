@@ -35,7 +35,7 @@ public abstract class Constants {
     public static final AsciiString REQUEST_ID = AsciiString.cached("requestId");
     // 分隔符
     public static final String SEGMENTATION = ",";
-
+    public static final String ROUTE = "route";
 
 
 }

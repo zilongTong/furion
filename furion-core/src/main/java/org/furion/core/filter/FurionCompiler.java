@@ -11,7 +11,6 @@ public class FurionCompiler {
 
     private final String filePath;
 
-
     public FurionCompiler(String filePath) {
         this.filePath = filePath;
     }
@@ -58,5 +57,9 @@ public class FurionCompiler {
         }
     }
 
+
+    public static void main(String[] args) {
+        new FurionCompiler("/");
+    }
 
 }

@@ -2,11 +2,13 @@ package org.furion.core.context;
 
 
 import io.netty.channel.socket.SocketChannel;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.furion.core.protocol.server.FurionSocketChannel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -18,18 +20,31 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ClientChannelLRUContext {
 
-    private static ConcurrentLRUHashMap<String/**ip:port**/, List<FurionSocketChannel>> socketChannelMap = new ConcurrentLRUHashMap<>(1024);
-    private static ConcurrentHashMap<SocketChannel,FurionSocketChannel> isUsedChannel = new ConcurrentHashMap<>();
+    private static ConcurrentLRUHashMap<String/**ip:port**/, Vector<FurionSocketChannel>> socketChannelMap = new ConcurrentLRUHashMap<>(1024);
+
+    private static ConcurrentHashMap<SocketChannel, FurionSocketChannel> isUsedChannel = new ConcurrentHashMap<>();
 
     public static void add(String clientId, SocketChannel channel) {
-        if(!socketChannelMap.containsKey(clientId))
-            socketChannelMap.put(clientId,new ArrayList<>());
-        socketChannelMap.get(clientId).add(new FurionSocketChannel(channel,true));
+        if (!socketChannelMap.containsKey(clientId))
+            socketChannelMap.put(clientId, new Vector<>());
+        socketChannelMap.get(clientId).addElement(new FurionSocketChannel(channel, true));
+    }
+
+    public static void add(String clientId, Vector<FurionSocketChannel> vector) {
+        if (!socketChannelMap.containsKey(clientId))
+            socketChannelMap.put(clientId, vector);
+//        socketChannelMap.get(clientId).addElement(new FurionSocketChannel(channel, true));
+    }
+
+
+
+    public static Vector<FurionSocketChannel> getClientConnected(String clientId) {
+        return socketChannelMap.get(clientId);
     }
 
     public static SocketChannel get(String clientId) {
         List<FurionSocketChannel> furionSocketChannelList = socketChannelMap.get(clientId);
-        if(furionSocketChannelList != null && !furionSocketChannelList.isEmpty()) {
+        if (furionSocketChannelList != null && !furionSocketChannelList.isEmpty()) {
             int index = ThreadLocalRandom.current().nextInt(furionSocketChannelList.size());
             for (int i = 0; i < furionSocketChannelList.size(); i++) {
                 FurionSocketChannel furionSocketChannel = furionSocketChannelList.get((index + i) % furionSocketChannelList.size());
@@ -43,7 +58,7 @@ public class ClientChannelLRUContext {
         return null;
     }
 
-    public static void setFree(SocketChannel socketChannel){
+    public static void setFree(SocketChannel socketChannel) {
         isUsedChannel.remove(socketChannel).setFree(true);
     }
 

@@ -5,8 +5,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-@AllArgsConstructor
 public class FurionSocketChannel {
-    SocketChannel socketChannel;
-    volatile boolean isFree;
+
+    private final SocketChannel socketChannel;
+
+    private volatile boolean isFree;
+
+    private transient Long exclusiveOwnerRequest;
+
+    public FurionSocketChannel(SocketChannel socketChannel, boolean isFree) {
+        this.socketChannel = socketChannel;
+        this.isFree = isFree;
+    }
+
+    public FurionSocketChannel(SocketChannel socketChannel, boolean isFree, Long requestId) {
+        this.socketChannel = socketChannel;
+        this.isFree = isFree;
+        this.exclusiveOwnerRequest = requestId;
+    }
 }
