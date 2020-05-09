@@ -40,7 +40,7 @@ public final class FurionFilterRegistry implements Serializable {
     public Boolean hasNext(FurionFilter furionFilter) {
 
         if (furionFilter == (headFilter.item)) {
-            if (headFilter.next.item != null) {
+            if (headFilter.next != null) {
                 return true;
             }
         }

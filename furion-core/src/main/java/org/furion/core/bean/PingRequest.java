@@ -12,6 +12,8 @@ import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
 import org.furion.core.bean.eureka.Server;
 import org.furion.core.enumeration.ContentType;
+import org.furion.core.utils.id.GeneratorEnum;
+import org.furion.core.utils.id.KeyGeneratorFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -24,12 +26,22 @@ public class PingRequest {
     private int port;
     private static DefaultFullHttpRequest request;
 
+    private Long requestId;
     private Server server;
+
+    public Long getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(Long requestId) {
+        this.requestId = requestId;
+    }
 
     public PingRequest(Server server) {
         this.server = server;
         this.host = server.getHost();
         this.port = server.getPort();
+        this.requestId = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
         URI uri = null;
         try {
             uri = new URI(FurionConstants.HTTP_PRE.concat(this.host).concat(FurionConstants.SEPARATE_COLON).concat(String.valueOf(this.port)));

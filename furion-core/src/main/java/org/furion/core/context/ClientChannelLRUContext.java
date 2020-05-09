@@ -2,7 +2,10 @@ package org.furion.core.context;
 
 
 import io.netty.channel.socket.SocketChannel;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.furion.core.bean.eureka.Server;
+import org.furion.core.exception.NoChannelBindRequestException;
 import org.furion.core.protocol.server.FurionSocketChannel;
 
 import java.util.ArrayList;
@@ -37,22 +40,35 @@ public class ClientChannelLRUContext {
     }
 
 
+    private static String getKey(Server server) {
+        return server.getHost().concat(":").concat(String.valueOf(server.getPort()));
+    }
+
     public static Vector<FurionSocketChannel> getClientConnected(String clientId) {
         return socketChannelMap.get(clientId);
     }
 
-    public static SocketChannel get(String clientId) {
+    public static Long getRequestIdByChannel(SocketChannel channel) {
+        FurionSocketChannel furionSocketChannel = isUsedChannel.get(channel);
+        if (furionSocketChannel == null || furionSocketChannel.getExclusiveOwnerRequest() == null) {
+            throw new NoChannelBindRequestException(channel);
+        }
+        return furionSocketChannel.getExclusiveOwnerRequest();
+    }
+
+    public static SocketChannel get(String clientId, Long requestId) {
         List<FurionSocketChannel> furionSocketChannelList = socketChannelMap.get(clientId);
         if (furionSocketChannelList != null && !furionSocketChannelList.isEmpty()) {
             int index = ThreadLocalRandom.current().nextInt(furionSocketChannelList.size());
             for (int i = 0; i < furionSocketChannelList.size(); i++) {
                 FurionSocketChannel furionSocketChannel = furionSocketChannelList.get((index + i) % furionSocketChannelList.size());
-                if (furionSocketChannel.isFree()) {
+                if (furionSocketChannel.isFree() && furionSocketChannel.getExclusiveOwnerRequest() == null) {
                     if (!furionSocketChannel.getSocketChannel().isActive()) {
                         furionSocketChannelList.remove(furionSocketChannel);
                         continue;
                     }
                     furionSocketChannel.setFree(false);
+                    furionSocketChannel.setExclusiveOwnerRequest(requestId);
                     isUsedChannel.put(furionSocketChannel.getSocketChannel(), furionSocketChannel);
                     return furionSocketChannel.getSocketChannel();
                 }
@@ -62,9 +78,31 @@ public class ClientChannelLRUContext {
     }
 
 
+    public static boolean setBusy(SocketChannel socketChannel, Server sever, Long id) {
+        if (isUsedChannel.containsKey(socketChannel)) {
+        } else {
+            String key = getKey(sever);
+            Vector<FurionSocketChannel> vector = getClientConnected(key);
+            if (CollectionUtils.isNotEmpty(vector)) {
+                vector.forEach(f -> {
+                    if (f.getSocketChannel() == socketChannel) {
+                        vector.remove(f);
+                        f.setFree(false);
+                        f.setExclusiveOwnerRequest(id);
+                        vector.addElement(f);
+                        isUsedChannel.put(socketChannel, f);
+                    }
+                });
+                socketChannelMap.put(key, vector);
+            }
+        }
+        return false;
+    }
+
+
     public static void setFree(SocketChannel socketChannel) {
         if (isUsedChannel.containsKey(socketChannel)) {
-            isUsedChannel.remove(socketChannel).setFree(true);
+            isUsedChannel.remove(socketChannel).releaseChannel();
         } else {
             System.out.println("");
         }
