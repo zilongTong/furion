@@ -56,38 +56,36 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
     private volatile boolean isConncted = false;
 
 
-    private Bootstrap bootstrap = new Bootstrap();
+    private final Bootstrap bootstrap = new Bootstrap();
 
+    private final EventLoopGroup group = new NioEventLoopGroup();
 
     public NettyClientNetWork(HashedWheelTimer t, Server s) {
         server = s;
         timer = t;
         this.host = server.getHost();
         this.port = server.getPort();
+        bootstrap.group(group).channel(NioSocketChannel.class)
+                .handler(new FurionClientChannelInitializer(bootstrap, server, true))
+                .option(ChannelOption.SO_KEEPALIVE, true);
     }
 
     @Override
     public FurionResponse send(RequestCommand requestCommand) {
 
-        String key = host.concat(":").concat(String.valueOf(port));
+//        String key = host.concat(":").concat(String.valueOf(port));
 
         CountDownLatch waitLatch = new CountDownLatch(1);
         CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
 
-
         ChannelConnectionPool pool = new ChannelConnectionPool(bootstrap);
 
-        SocketChannel channel = pool.getConnect(server);
+        SocketChannel channel = pool.getConnect(server,requestCommand.getRequestId());
 
         if (channel == null) {
             throw new NoAvailableSocketChannelException(requestCommand.getRequestId());
         }
         channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
-        if (channel != null) {
-            channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
-        }
-
-
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);
             FurionResponse response = ResponseLRUContext.get(requestCommand.getRequestId());
@@ -103,7 +101,7 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
     }
 
     void release(Long id) {
-        CountDownLatchLRUContext.remove(id);
+//        CountDownLatchLRUContext.remove(id);
         ResponseLRUContext.remove(id);
         RequestLRUContext.remove(id);
     }

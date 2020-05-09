@@ -13,6 +13,12 @@ public class FurionSocketChannel {
 
     private transient Long exclusiveOwnerRequest;
 
+
+    public void releaseChannel() {
+        isFree = true;
+        exclusiveOwnerRequest = null;
+    }
+
     public FurionSocketChannel(SocketChannel socketChannel, boolean isFree) {
         this.socketChannel = socketChannel;
         this.isFree = isFree;

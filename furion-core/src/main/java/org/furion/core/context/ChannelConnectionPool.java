@@ -8,6 +8,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Data;
+import org.apache.commons.collections.CollectionUtils;
 import org.furion.core.bean.eureka.Server;
 import org.furion.core.protocol.client.FurionClientChannelInitializer;
 import org.furion.core.protocol.server.FurionSocketChannel;
@@ -47,17 +48,17 @@ public class ChannelConnectionPool {
     }
 
 
-    public SocketChannel getConnect(Server server) {
-        SocketChannel channel = ClientChannelLRUContext.get(getKey(server));
+    public SocketChannel getConnect(Server server,Long requestId) {
+        SocketChannel channel = ClientChannelLRUContext.get(getKey(server),requestId);
         if (channel == null) {
-            if (ClientChannelLRUContext.getClientConnected(getKey(server)).size() > 0) {
+            if (CollectionUtils.isNotEmpty(ClientChannelLRUContext.getClientConnected(getKey(server)))) {
                 if (!incrementConnections(server)) {
                     return null;
                 }
             } else {
                 createPool(server);
             }
-            return getConnect(server);
+            return getConnect(server,requestId);
         }
         return channel;
     }
@@ -66,10 +67,6 @@ public class ChannelConnectionPool {
     private FurionSocketChannel connect(Server server) {
         ChannelFuture future = null;
         try {
-            EventLoopGroup group = new NioEventLoopGroup();
-            bootstrap.group(group).channel(NioSocketChannel.class)
-                    .handler(new FurionClientChannelInitializer(bootstrap, server, true))
-                    .option(ChannelOption.SO_KEEPALIVE, true);
             future = bootstrap.connect(server.getHost(), server.getPort()).sync();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -89,10 +86,7 @@ public class ChannelConnectionPool {
     }
 
     private String getKey(Server server) {
-        if (StringUtils.isEmpty(server.getId())) {
-            return server.getHost().concat(":").concat(String.valueOf(server.getPort()));
-        }
-        return server.getId();
+        return server.getHost().concat(":").concat(String.valueOf(server.getPort()));
     }
 
 

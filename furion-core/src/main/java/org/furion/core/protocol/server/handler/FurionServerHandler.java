@@ -81,7 +81,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
      */
     protected void disconnected() {
         become(DISCONNECTED);
-        System.out.println("Disconnected-------------" + netWork.getAllChannels().toString());
+        System.out.println("server socket disconnected-------------" + netWork.getAllChannels().toString());
         LOG.debug("Disconnected");
     }
 
@@ -177,7 +177,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         System.out.println(ctx.channel());
-        System.out.println("read...........");
+        System.out.println("server channel read...........");
         if (msg instanceof FullHttpRequest) {
             System.out.println("FullHttpRequest...........");
             Long uid = KeyGeneratorFactory.gen(GeneratorEnum.IP).generate();
@@ -190,7 +190,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
             try {
                 ReferenceCountUtil.release(msg);
             } catch (IllegalReferenceCountException e) {
-
+                System.out.println("server handler ReferenceCountUtil error");
             }
         }
     }

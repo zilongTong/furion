@@ -87,7 +87,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         integer.incrementAndGet();
-//        System.out.println("userEventTriggered....................." + integer.get());
+        System.out.println("userEventTriggered....................." + integer.get());
 //        System.out.println("evt"+evt.toString());
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
@@ -95,6 +95,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
             // if(currentTime <= TRY_TIMES){
             System.out.println("心跳触发时间：" + new Date() + "heart beat currentTime:");
             // currentTime++;
+
             PingRequest pingRequest = new PingRequest(server);
             DefaultFullHttpRequest req = pingRequest.getHttpRequestInstance();
 
@@ -106,8 +107,11 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        
+
         channelRead1(ctx, msg);
+
+
+
 //        ctx.fireChannelRead(msg);
         System.out.println("FurionClientHandler release msg");
         ReferenceCountUtil.release(msg);
@@ -123,7 +127,10 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
      */
     private void channelRead1(ChannelHandlerContext ctx, Object httpObject)
             throws Exception {
-        System.out.println("FurionClientHandler read..............");
+        System.out.println(ctx);
+        System.out.println("Furion Client channel Handler read..............");
+
+        System.out.println("httpObject" + httpObject.toString());
 
         FurionResponse result = new FurionResponse();
         ByteBuf buf = Unpooled.EMPTY_BUFFER;
@@ -131,16 +138,22 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         if (httpObject instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) httpObject;
             HttpHeaders headers = response.headers();
-//            headers.entries().stream().forEach(i -> {
-//                System.out.print(i.getKey() + ":");
-//                System.out.println(i.getValue());
-//            });
+            headers.entries().stream().forEach(i -> {
+                System.out.print(i.getKey() + ":");
+                System.out.println(i.getValue());
+            });
+
+
             contentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
-            String requestId = response.headers().get(REQUEST_ID);
-            if (StringUtils.isEmpty(requestId)) {
-                return;
-            }
-            result.setRequestId(NumberUtils.toLong(requestId));
+            SocketChannel socketChannel = (SocketChannel) ctx.channel();
+            Long requestId = ClientChannelLRUContext.getRequestIdByChannel(socketChannel);
+
+//             =response.headers().get("content-length");
+//            if (StringUtils.isEmpty(requestId)) {
+//                return;
+//            }
+
+            result.setRequestId(requestId);
         }
         if (httpObject instanceof HttpContent) {
             HttpContent content = (HttpContent) httpObject;
@@ -168,7 +181,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         System.out.println("channelInactive.....................");
         System.out.println(System.currentTimeMillis());
         ClientChannelLRUContext.remove((SocketChannel) ctx.channel());
-        System.out.println("链接关闭");
+        System.out.println("client socket disconnected-------------");
 //        if (reconnect) {
 //            System.out.println("链接关闭，将进行重连");
 //            if (attempts < TRY_TIMES) {
