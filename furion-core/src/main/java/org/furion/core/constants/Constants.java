@@ -34,8 +34,16 @@ public abstract class Constants {
 
     public static final AsciiString REQUEST_ID = AsciiString.cached("requestId");
     // 分隔符
-    public static final String SEGMENTATION = ",";
+    public static final String SEGMENTATION = ";";
 
+
+    public static final String HTTP_PREFIX = "http://";
+
+    public static final String CONFIG_PATH = "/config";
+    public static final String CONFIG_PATH_SYSTEM = "/config/system";
+    public static final String CONFIG_PATH_FURION = "/config/route";
+    public static final String CONFIG_PATH_FIELTER = "/config/filter";
+    public static final String MONITOR_PATH = "/config/filter";
 
 
 }

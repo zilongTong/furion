@@ -101,7 +101,6 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
         }
         if (channel != null) {
             channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
-//            System.out.println("test");
         }
 
         try {
