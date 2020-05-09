@@ -18,16 +18,16 @@ public class FurionFilterRunner {
 
     public void filter() {
         FurionFilterRegistry registry = FurionGatewayContext.getInstance().getRegistry();
-        FurionFilterRegistry.Node<FurionFilter> node = (FurionFilterRegistry.Node<FurionFilter>) registry.getHeadFilter();
-        doFilter(node);
+        FurionFilter filter = registry.getHeadFilter();
+        doFilter(filter,registry);
     }
 
-    private void doFilter(FurionFilterRegistry.Node<FurionFilter> node) {
-        if (node.getItem().shouldFilter0()) {
-            node.getItem().init(requestId, channel).run();
+    private void doFilter(FurionFilter filter, FurionFilterRegistry registry) {
+        if (filter.shouldFilter0()) {
+            filter.init(requestId, channel).run();
         }
-        if (node.hasNext()) {
-            doFilter(node.getSuccessor(node));
+        if (registry.hasNext(filter)) {
+            doFilter(registry.getSuccessor(filter),registry);
         }
     }
 

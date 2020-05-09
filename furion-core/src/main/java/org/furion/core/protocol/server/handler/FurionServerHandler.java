@@ -176,6 +176,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        System.out.println(ctx.channel());
         System.out.println("read...........");
         if (msg instanceof FullHttpRequest) {
             System.out.println("FullHttpRequest...........");

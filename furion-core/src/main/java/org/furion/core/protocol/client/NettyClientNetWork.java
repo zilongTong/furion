@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpVersion;
+import org.checkerframework.checker.units.qual.C;
 import org.furion.core.bean.eureka.Server;
+import org.furion.core.context.ChannelConnectionPool;
 import org.furion.core.context.ClientChannelLRUContext;
 import org.furion.core.context.CountDownLatchLRUContext;
 import org.furion.core.context.FurionResponse;
@@ -14,6 +16,7 @@ import org.furion.core.context.RequestLRUContext;
 import org.furion.core.context.ResponseLRUContext;
 
 import org.furion.core.enumeration.ProtocolType;
+import org.furion.core.exception.NoAvailableSocketChannelException;
 import org.furion.core.protocol.client.http.HttpNetFactory;
 import org.furion.core.protocol.client.http.HttpNetWork;
 import io.netty.bootstrap.Bootstrap;
@@ -63,51 +66,33 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
         this.port = server.getPort();
     }
 
-
-    private synchronized void connect() {
-        if(!isConncted) {
-//        FurionClientHandler handler = new FurionClientHandler(bootstrap, timer, server, true);
-            EventLoopGroup group = new NioEventLoopGroup();
-            String keyString = host.concat(":").concat(String.valueOf(port));
-            bootstrap.group(group).channel(NioSocketChannel.class)
-                    .handler(new FurionClientChannelInitializer(bootstrap, server, timer, true))
-                    .option(ChannelOption.SO_KEEPALIVE, true);
-            int retry = 3;
-            try {
-                for (int i = 0; i < 5 && retry > 0; i++) {
-                    ChannelFuture future = bootstrap.connect(host, port).sync();
-                    if (future.isSuccess())
-                        ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
-                    else
-                        retry--;
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            isConncted = true;
-        }
-    }
-
     @Override
     public FurionResponse send(RequestCommand requestCommand) {
 
         String key = host.concat(":").concat(String.valueOf(port));
+
         CountDownLatch waitLatch = new CountDownLatch(1);
         CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
-        Channel channel = ClientChannelLRUContext.get(key);
-        if(channel == null) {
-            connect();
-            channel = ClientChannelLRUContext.get(key);
+
+
+        ChannelConnectionPool pool = new ChannelConnectionPool(bootstrap);
+
+        SocketChannel channel = pool.getConnect(server);
+
+        if (channel == null) {
+            throw new NoAvailableSocketChannelException(requestCommand.getRequestId());
         }
+        channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
         if (channel != null) {
             channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
         }
+
 
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);
             FurionResponse response = ResponseLRUContext.get(requestCommand.getRequestId());
 
-            System.out.println(host+" response:"+response);
+            System.out.println(host + " response:" + response);
             return response;
         } catch (Exception e) {
             e.printStackTrace();

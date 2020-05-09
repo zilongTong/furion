@@ -4,10 +4,15 @@ package org.furion.core.protocol.server;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollChannelOption;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.channel.kqueue.KQueueChannelOption;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
 import io.netty.channel.udt.nio.NioUdtProvider;
+import io.netty.channel.unix.UnixChannelOption;
 import io.netty.handler.traffic.GlobalTrafficShapingHandler;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.furion.core.enumeration.ProtocolType;
@@ -45,6 +50,8 @@ public class FurionServerNetWork implements FurionHttpServer {
     public static final int MAX_HEADER_SIZE_DEFAULT = 8192 * 2;
     public static final int MAX_CHUNK_SIZE_DEFAULT = 8192 * 2;
 
+
+    private Boolean bindMultiplePorts;
 
     private int maxInitialLineLength;
     private int maxHeaderSize;
@@ -107,7 +114,7 @@ public class FurionServerNetWork implements FurionHttpServer {
         this.localAddress = localAddress;
     }
 
-    public FurionServerNetWork(int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, int connectTimeout, int idleConnectionTimeout, ServerGroup serverGroup, ProtocolType protocolType, InetSocketAddress requestedAddress, InetSocketAddress localAddress) {
+    public FurionServerNetWork(int maxInitialLineLength, int maxHeaderSize, int maxChunkSize, int connectTimeout, int idleConnectionTimeout, ServerGroup serverGroup, ProtocolType protocolType, InetSocketAddress requestedAddress, InetSocketAddress localAddress, Boolean bindMultiplePorts) {
         this.maxInitialLineLength = maxInitialLineLength;
         this.maxHeaderSize = maxHeaderSize;
         this.maxChunkSize = maxChunkSize;
@@ -118,6 +125,7 @@ public class FurionServerNetWork implements FurionHttpServer {
         this.protocolType = protocolType;
         this.requestedAddress = requestedAddress;
         this.localAddress = localAddress;
+        this.bindMultiplePorts = bindMultiplePorts;
     }
 
     private final AtomicBoolean stopped = new AtomicBoolean(false);
@@ -254,6 +262,31 @@ public class FurionServerNetWork implements FurionHttpServer {
                 throw new UnknownTransportProtocolException(protocolType);
         }
         serverBootstrap.childHandler(new FurionServerChannelInitializer(FurionServerNetWork.this));
+
+        /**
+         *
+         *  linux内核版本 >= 3.9
+         *
+         *  Netty版本 >= 4.0.16
+         *
+         **/
+        if (Epoll.isAvailable() && bindMultiplePorts) {
+            serverBootstrap.option(ChannelOption.SO_BROADCAST, true);
+            serverBootstrap.option(EpollChannelOption.SO_REUSEPORT, true);// 配置
+            // linux系统下使用SO_REUSEPORT特性，使得多个进程绑定同一个端口
+            int cpuNum = Runtime.getRuntime().availableProcessors();
+            LOG.info("using EPoll reuse port and cpu:{}", cpuNum);
+            for (int i = 0; i < cpuNum; i++) {
+                doBind(serverBootstrap);
+            }
+        } else {
+            doBind(serverBootstrap);
+        }
+        LOG.info("furion gateway started at address: " + this.boundAddress);
+        Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
+    }
+
+    private void doBind(ServerBootstrap serverBootstrap) {
         ChannelFuture future = serverBootstrap.bind(requestedAddress)
                 .addListener(new ChannelFutureListener() {
                     @Override
@@ -264,14 +297,11 @@ public class FurionServerNetWork implements FurionHttpServer {
                         }
                     }
                 }).awaitUninterruptibly();
-
         Throwable cause = future.cause();
         if (cause != null) {
             throw new RuntimeException(cause);
         }
         this.boundAddress = ((InetSocketAddress) future.channel().localAddress());
-        LOG.info("furion gateway started at address: " + this.boundAddress);
-        Runtime.getRuntime().addShutdownHook(jvmShutdownHook);
     }
 
     @Override
@@ -308,7 +338,6 @@ public class FurionServerNetWork implements FurionHttpServer {
     public void setThrottle(long readThrottleBytesPerSecond, long writeThrottleBytesPerSecond) {
 
     }
-
 
 
 }

@@ -4,10 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.filter.FilterManager;
-import org.furion.core.filter.FilterType;
+
 import org.furion.core.filter.FurionFilter;
 import org.furion.core.filter.FurionFilterRegistry;
-import org.furion.core.filter.filters.RouteFilter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +34,11 @@ public class FurionGatewayContext implements GatewayContext {
 
     public FurionFilterRegistry getRegistry() {
         if (registry == null) {
-            registry = new FurionFilterRegistry(new RouteFilter());
+            registry = new FurionFilterRegistry();
         }
         return registry;
     }
+
 
 //    public FurionFilterRegistry getRegistry() {
 //        return registry;
@@ -70,7 +71,8 @@ public class FurionGatewayContext implements GatewayContext {
         furionProperties = new FurionProperties();
         systemProperties = new SystemProperties();
         filterManager = FilterManager.getInstance();
-        registry = FurionFilterRegistry.getInstance();
+        registry = new FurionFilterRegistry();
+        furionProperties = new FurionProperties();
         init();
     }
 

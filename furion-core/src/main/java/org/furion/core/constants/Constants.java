@@ -36,6 +36,7 @@ public abstract class Constants {
     // 分隔符
     public static final String SEGMENTATION = ";";
 
+    public static final String ROUTE = "route";
 
     public static final String HTTP_PREFIX = "http://";
 

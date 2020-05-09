@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 
 public class FilterExclusiveOwner {
 
-    private transient boolean whetherWriteAndFlush;
+    private transient volatile boolean whetherWriteAndFlush;
 
     private transient Long exclusiveOwnerRequest;
 

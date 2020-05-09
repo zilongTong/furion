@@ -106,6 +106,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        
         channelRead1(ctx, msg);
 //        ctx.fireChannelRead(msg);
         System.out.println("FurionClientHandler release msg");
@@ -168,15 +169,15 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         System.out.println(System.currentTimeMillis());
         ClientChannelLRUContext.remove((SocketChannel) ctx.channel());
         System.out.println("链接关闭");
-        if (reconnect) {
-            System.out.println("链接关闭，将进行重连"+ctx.channel().remoteAddress());
-            if (attempts < TRY_TIMES) {
-                attempts++;
-                //重连的间隔时间会越来越长
-                int timeout = 2 << attempts;
-                timer.newTimeout(this, timeout, TimeUnit.MILLISECONDS);
-            }
-        }
+//        if (reconnect) {
+//            System.out.println("链接关闭，将进行重连");
+//            if (attempts < TRY_TIMES) {
+//                attempts++;
+//                //重连的间隔时间会越来越长
+//                int timeout = 2 << attempts;
+//                timer.newTimeout(this, timeout, TimeUnit.MILLISECONDS);
+//            }
+//        }
         ctx.fireChannelInactive();
     }
 
