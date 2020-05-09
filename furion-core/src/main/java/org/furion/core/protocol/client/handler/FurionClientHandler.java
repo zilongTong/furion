@@ -81,17 +81,17 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
                 this,
                 new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS),
         };
-        System.out.println("FurionClientHandler init...............");
+//        System.out.println("FurionClientHandler init...............");
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         integer.incrementAndGet();
-        System.out.println("userEventTriggered....................." + integer.get());
-        System.out.println(evt.toString());
+//        System.out.println("userEventTriggered....................." + integer.get());
+//        System.out.println("evt"+evt.toString());
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
-            System.out.println(event.state());
+//            System.out.println("state:"+event.state());
             // if(currentTime <= TRY_TIMES){
             System.out.println("心跳触发时间：" + new Date() + "heart beat currentTime:");
             // currentTime++;
@@ -124,7 +124,6 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     private void channelRead1(ChannelHandlerContext ctx, Object httpObject)
             throws Exception {
         System.out.println("FurionClientHandler read..............");
-        ClientChannelLRUContext.setFree((SocketChannel) ctx.channel());
 
         FurionResponse result = new FurionResponse();
         ByteBuf buf = Unpooled.EMPTY_BUFFER;
@@ -132,10 +131,10 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         if (httpObject instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) httpObject;
             HttpHeaders headers = response.headers();
-            headers.entries().stream().forEach(i -> {
-                System.out.print(i.getKey() + ":");
-                System.out.println(i.getValue());
-            });
+//            headers.entries().stream().forEach(i -> {
+//                System.out.print(i.getKey() + ":");
+//                System.out.println(i.getValue());
+//            });
             contentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
             String requestId = response.headers().get(REQUEST_ID);
             if (StringUtils.isEmpty(requestId)) {
@@ -146,7 +145,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         if (httpObject instanceof HttpContent) {
             HttpContent content = (HttpContent) httpObject;
             buf = content.content();
-            System.out.println(buf.toString(io.netty.util.CharsetUtil.UTF_8));
+//            System.out.println("buf:"+buf.toString(io.netty.util.CharsetUtil.UTF_8));
         }
         buf = copiedBuffer(buf.toString(io.netty.util.CharsetUtil.UTF_8), CharsetUtil.UTF_8);
         DefaultFullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buf);
@@ -157,8 +156,10 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         // this.response = rpcResponse;
 //        ResponseLRUMap.add(result.getRequestId(), result);
 //        CountDownLatchLRUMap.get(result.getRequestId()).countDown();
-        System.out.println("receive data" + result.toString());
-        System.out.println(System.currentTimeMillis());
+//        System.out.println("receive data" + result.toString());
+//        System.out.println(System.currentTimeMillis());
+        ClientChannelLRUContext.setFree((SocketChannel) ctx.channel());
+
     }
 
 

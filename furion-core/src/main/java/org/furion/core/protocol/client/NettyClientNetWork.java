@@ -53,6 +53,7 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
     private final HashedWheelTimer timer;
     private static final ObjectMapper mapper = new ObjectMapper();
     private final Server server;
+    private volatile boolean isConncted = false;
 
 
     private Bootstrap bootstrap = new Bootstrap();
@@ -65,26 +66,6 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
         this.port = server.getPort();
     }
 
-
-    private void connect() {
-//        FurionClientHandler handler = new FurionClientHandler(bootstrap, timer, server, true);
-        EventLoopGroup group = new NioEventLoopGroup();
-        String keyString = host.concat(":").concat(String.valueOf(port));
-        bootstrap.group(group).channel(NioSocketChannel.class)
-                .handler(new FurionClientChannelInitializer(bootstrap, server, timer, true))
-                .option(ChannelOption.SO_KEEPALIVE, true);
-        try {
-
-            for (int i = 0; i < 50; i++) {
-                ChannelFuture future = bootstrap.connect(host, port).sync();
-                ClientChannelLRUContext.add(keyString, (SocketChannel) future.channel());
-            }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
     @Override
     public FurionResponse send(RequestCommand requestCommand) {
 
@@ -92,6 +73,7 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
 
         CountDownLatch waitLatch = new CountDownLatch(1);
         CountDownLatchLRUContext.add(requestCommand.getRequestId(), waitLatch);
+
 
         ChannelConnectionPool pool = new ChannelConnectionPool(bootstrap);
 
@@ -101,21 +83,18 @@ public class NettyClientNetWork implements HttpNetWork<RequestCommand, FurionRes
             throw new NoAvailableSocketChannelException(requestCommand.getRequestId());
         }
         channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
-//        while (true) {
-//            Channel channel = ClientChannelLRUContext.get(key);
-//            if (channel != null) {
-//                channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
-//                break;
-//            }
-//            connect();
-//        }
+        if (channel != null) {
+            channel.writeAndFlush(requestCommand.getRequestWrapper(ProtocolType.NETTY).getNettyRequest());
+        }
+
+
         try {
             waitLatch.await(requestTimeout, TimeUnit.MILLISECONDS);
             FurionResponse response = ResponseLRUContext.get(requestCommand.getRequestId());
 
-            System.out.println(response);
+            System.out.println(host + " response:" + response);
             return response;
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
             release(requestCommand.getRequestId());

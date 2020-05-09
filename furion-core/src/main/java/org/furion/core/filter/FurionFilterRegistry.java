@@ -98,9 +98,10 @@ public final class FurionFilterRegistry implements Serializable {
 
     /**
      * 删除原Filter对应的实例 TODO
+     * Filter 应为单例
      */
-    public void registerFilter(String key, FurionFilter filter) {
-        System.out.println("Filter注册 key:" + key + ",filterName:" + filter.getClass().getName());
+    public void registerFilter(String className, FurionFilter filter) {
+        System.out.println("Filter注册 className:" + className + ",filterName:" + filter.getClass().getName());
     }
 
     public void removeFilter(String filterName) {

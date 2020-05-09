@@ -35,9 +35,8 @@ import java.util.concurrent.TimeUnit;
 public class FurionClientChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final Bootstrap bootstrap;
-
     private final Server server;
-    private final Timer timer;//定时器
+    private  Timer timer;//定时器
     private volatile boolean reconnect = true;
 
     public FurionClientChannelInitializer(Bootstrap bootstrap, Server server, Timer timer, Boolean reConnect) {
@@ -45,6 +44,12 @@ public class FurionClientChannelInitializer extends ChannelInitializer<SocketCha
         this.server = server;
         this.timer = timer;
         this.reconnect = reConnect;
+    }
+
+    public FurionClientChannelInitializer(Bootstrap bootstrap, Server server, boolean reconnect) {
+        this.bootstrap = bootstrap;
+        this.server = server;
+        this.reconnect = reconnect;
     }
 
     @Override

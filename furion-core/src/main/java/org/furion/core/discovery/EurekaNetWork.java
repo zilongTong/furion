@@ -7,6 +7,8 @@ import org.furion.core.bean.eureka.ApplicationBean;
 import org.furion.core.utils.OkHttpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +50,7 @@ public class EurekaNetWork {
             public void run() {
                 try {
                     EurekaNetWork.fetchAllService();
+//                    System.out.println("eureka finish");
                 } catch (Exception e) {
                     log.error("fetchRegisterThread fetch eureka application error", e);
                 }
@@ -87,7 +90,7 @@ public class EurekaNetWork {
                     newMap.put(serviceBean.getServiceName(),new ArrayList<>());
                     final List<Server> serverList = newMap.get(serviceBean.getServiceName());
                     serviceBean.getInstanceBeans().forEach(instanceBean -> {
-                        if("UP".equals(instanceBean.getStatus())) {
+                        if("UP".equals(instanceBean.getStatus()) && !"10.28.150.218".equals(instanceBean.getHostName())) {
                             Server server = new Server(instanceBean.getHostName(), Integer.valueOf(instanceBean.getPort()));
                             serverList.add(server);
                         }

@@ -73,7 +73,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
         return true;
     }
 
-    //todo: for test
+
     protected boolean shouldFilter0() {
         if (filterType().equalsIgnoreCase(FilterType.PRE.name())) {
             return shouldFilter() && getCurrentExclusiveOwnerWhetherWriteAndFlush();

@@ -2,9 +2,14 @@ package org.furion.core.context;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Data;
 import org.furion.core.bean.eureka.Server;
+import org.furion.core.protocol.client.FurionClientChannelInitializer;
 import org.furion.core.protocol.server.FurionSocketChannel;
 import org.furion.core.utils.StringUtils;
 
@@ -61,6 +66,10 @@ public class ChannelConnectionPool {
     private FurionSocketChannel connect(Server server) {
         ChannelFuture future = null;
         try {
+            EventLoopGroup group = new NioEventLoopGroup();
+            bootstrap.group(group).channel(NioSocketChannel.class)
+                    .handler(new FurionClientChannelInitializer(bootstrap, server, true))
+                    .option(ChannelOption.SO_KEEPALIVE, true);
             future = bootstrap.connect(server.getHost(), server.getPort()).sync();
         } catch (InterruptedException e) {
             e.printStackTrace();

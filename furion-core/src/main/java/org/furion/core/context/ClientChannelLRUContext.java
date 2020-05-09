@@ -37,7 +37,6 @@ public class ClientChannelLRUContext {
     }
 
 
-
     public static Vector<FurionSocketChannel> getClientConnected(String clientId) {
         return socketChannelMap.get(clientId);
     }
@@ -49,6 +48,10 @@ public class ClientChannelLRUContext {
             for (int i = 0; i < furionSocketChannelList.size(); i++) {
                 FurionSocketChannel furionSocketChannel = furionSocketChannelList.get((index + i) % furionSocketChannelList.size());
                 if (furionSocketChannel.isFree()) {
+                    if (!furionSocketChannel.getSocketChannel().isActive()) {
+                        furionSocketChannelList.remove(furionSocketChannel);
+                        continue;
+                    }
                     furionSocketChannel.setFree(false);
                     isUsedChannel.put(furionSocketChannel.getSocketChannel(), furionSocketChannel);
                     return furionSocketChannel.getSocketChannel();
@@ -58,8 +61,13 @@ public class ClientChannelLRUContext {
         return null;
     }
 
+
     public static void setFree(SocketChannel socketChannel) {
-        isUsedChannel.remove(socketChannel).setFree(true);
+        if (isUsedChannel.containsKey(socketChannel)) {
+            isUsedChannel.remove(socketChannel).setFree(true);
+        } else {
+            System.out.println("");
+        }
     }
 
     public static synchronized void remove(SocketChannel channel) {
