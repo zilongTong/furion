@@ -71,7 +71,7 @@ public class FurionGatewayContext implements GatewayContext {
         furionProperties = new FurionProperties();
         systemProperties = new SystemProperties();
         filterManager = FilterManager.getInstance();
-        registry = new FurionFilterRegistry();
+//        registry = new FurionFilterRegistry();
         furionProperties = new FurionProperties();
         init();
     }

@@ -3,6 +3,7 @@ package org.furion.core.protocol.client.handler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledHeapByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -98,10 +99,10 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
             System.out.println("心跳触发时间：" + new Date() + "heart beat currentTime:");
             // currentTime++;
 
-
             PingRequest pingRequest = new PingRequest(server);
             DefaultFullHttpRequest req = pingRequest.getHttpRequestInstance();
             ClientChannelLRUContext.setBusy((SocketChannel) ctx.channel(), server, pingRequest.getRequestId(), MsgType.PING);
+            ReferenceCountUtil.retain(req);
             ctx.channel().writeAndFlush(req);
             //  }
 
@@ -153,6 +154,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
             MsgType msgType = furionSocketChannel.getMsgType();
             if (msgType != null && msgType == MsgType.PING) {
                 ClientChannelLRUContext.setFree((SocketChannel) ctx.channel());
+                System.out.println("heartbeat response");
                 return;
             }
             result.setRequestId(requestId);

@@ -147,7 +147,7 @@ public class RouteFilter extends FurionFilter {
                     propertiesManager.refresh(PropertiesSource.NET,properties);
                     break;
                 case Constants.CONFIG_PATH_FIELTER:
-                    String filterPath = RouteFilter.class.getResource("/filter").getPath();
+                    String filterPath = RouteFilter.class.getResource("/filter").getPath()+"/";
                     String fileName = getJavaFileName(new String(src));
                     if(!StringUtil.isNullOrEmpty(fileName)){
                         try(FileOutputStream fos = new FileOutputStream(filterPath+fileName)){

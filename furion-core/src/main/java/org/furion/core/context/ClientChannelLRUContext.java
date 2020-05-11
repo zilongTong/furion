@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -24,19 +26,21 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class ClientChannelLRUContext {
 
-    private static ConcurrentLRUHashMap<String/**ip:port**/, Vector<FurionSocketChannel>> socketChannelMap = new ConcurrentLRUHashMap<>(1024);
+    private static ConcurrentLRUHashMap<String/**ip:port**/, CopyOnWriteArrayList<FurionSocketChannel>> socketChannelMap = new ConcurrentLRUHashMap<>(1024);
 
     private static ConcurrentHashMap<SocketChannel, FurionSocketChannel> isUsedChannel = new ConcurrentHashMap<>();
 
+
     public static void add(String clientId, SocketChannel channel) {
         if (!socketChannelMap.containsKey(clientId))
-            socketChannelMap.put(clientId, new Vector<>());
-        socketChannelMap.get(clientId).addElement(new FurionSocketChannel(channel, true));
+            socketChannelMap.put(clientId, new CopyOnWriteArrayList<>());
+        socketChannelMap.get(clientId).add(new FurionSocketChannel(channel, true));
     }
 
-    public static void add(String clientId, Vector<FurionSocketChannel> vector) {
-        if (!socketChannelMap.containsKey(clientId))
-            socketChannelMap.put(clientId, vector);
+    public static void add(String clientId, CopyOnWriteArrayList<FurionSocketChannel> list) {
+        if (!socketChannelMap.containsKey(clientId)) {
+            socketChannelMap.put(clientId, list);
+        }
 //        socketChannelMap.get(clientId).addElement(new FurionSocketChannel(channel, true));
     }
 
@@ -45,7 +49,7 @@ public class ClientChannelLRUContext {
         return server.getHost().concat(":").concat(String.valueOf(server.getPort()));
     }
 
-    public static Vector<FurionSocketChannel> getClientConnected(String clientId) {
+    public static CopyOnWriteArrayList<FurionSocketChannel> getClientConnected(String clientId) {
         return socketChannelMap.get(clientId);
     }
 
@@ -83,19 +87,19 @@ public class ClientChannelLRUContext {
         if (isUsedChannel.containsKey(socketChannel)) {
         } else {
             String key = getKey(sever);
-            Vector<FurionSocketChannel> vector = getClientConnected(key);
-            if (CollectionUtils.isNotEmpty(vector)) {
-                for (FurionSocketChannel f : vector) {
+            CopyOnWriteArrayList<FurionSocketChannel> list = getClientConnected(key);
+            if (CollectionUtils.isNotEmpty(list)) {
+                for (FurionSocketChannel f : list) {
                     if (f.getSocketChannel() == socketChannel) {
-                        vector.remove(f);
+                        list.remove(f);
                         f.setFree(false);
                         f.setExclusiveOwnerRequest(id);
                         f.setMsgType(msgType);
-                        vector.addElement(f);
+                        list.add(f);
                         isUsedChannel.put(socketChannel, f);
                     }
                 }
-                socketChannelMap.put(key, vector);
+                socketChannelMap.put(key, list);
             }
         }
         return false;
@@ -114,7 +118,7 @@ public class ClientChannelLRUContext {
 
     public static synchronized void remove(SocketChannel channel) {
         if (socketChannelMap != null && socketChannelMap.size() > 0) {
-            socketChannelMap.remove(channel.remoteAddress());
+            socketChannelMap.get(channel.remoteAddress()).remove(channel);
         }
     }
 

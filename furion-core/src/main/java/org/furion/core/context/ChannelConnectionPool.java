@@ -14,7 +14,10 @@ import org.furion.core.protocol.client.FurionClientChannelInitializer;
 import org.furion.core.protocol.server.FurionSocketChannel;
 import org.furion.core.utils.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Data
 public class ChannelConnectionPool {
@@ -75,12 +78,13 @@ public class ChannelConnectionPool {
     }
 
     public synchronized void createPool(Server server) {
-        Vector<FurionSocketChannel> connections = new Vector<>();
+        List<FurionSocketChannel> connections = new ArrayList<>();
         if (!StringUtils.isEmpty(server.getId())) {
             for (int i = 0; i < DEFAULT_INITIAL_CONNECTIONS_PER_HOST; i++) {
-                connections.addElement(connect(server));
+                connections.add(connect(server));
             }
-            ClientChannelLRUContext.add(server.getId(), connections);
+            CopyOnWriteArrayList list = new CopyOnWriteArrayList(connections);
+            ClientChannelLRUContext.add(server.getId(), list);
 
         }
     }
@@ -92,8 +96,9 @@ public class ChannelConnectionPool {
 
     private boolean incrementConnections(Server server) {
         String key = getKey(server);
-        Vector<FurionSocketChannel> socketChannels = ClientChannelLRUContext.getClientConnected(key);
+        CopyOnWriteArrayList<FurionSocketChannel> socketChannels = ClientChannelLRUContext.getClientConnected(key);
 
+        List<FurionSocketChannel> furionSocketChannelList = new ArrayList<>();
         for (int x = 0; x < DEFAULT_INCREMENTAL_CONNECTIONS; x++) {
 
             if (this.DEFAULT_MAX_CONNECTIONS_PER_HOST > 0
@@ -101,12 +106,14 @@ public class ChannelConnectionPool {
                 return false;
             }
             try {
-                socketChannels.addElement(connect(server));
-                ClientChannelLRUContext.add(key, socketChannels);
+                furionSocketChannelList.add(connect(server));
+//                ClientChannelLRUContext.add(key, socketChannels);
             } catch (Exception e) {
                 System.out.println(" 创建连接失败！ " + e.getMessage());
             }
         }
+        if(!furionSocketChannelList.isEmpty())
+            socketChannels.addAll(furionSocketChannelList);
         return true;
     }
 

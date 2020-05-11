@@ -35,7 +35,7 @@ public final class FilterManager {
     private ConcurrentHashMap<String, Long> fileLastModify;
 
     private FilterManager() {
-        filterRegistry = new FurionFilterRegistry();
+        filterRegistry = FurionGatewayContext.getInstance().getRegistry();
         fileLastModify = new ConcurrentHashMap<>();
         String path = PropertiesManager.getInstance().getSinglePropertyValue("filter.path", String.class);
         if (StringUtils.isNotBlank(path)) {
@@ -54,7 +54,7 @@ public final class FilterManager {
         if (init) {
             return;
         }
-        String filePath = PropertiesManager.getInstance().getSinglePropertyValue("filter.filePath", String.class);
+        String filePath = FurionCompiler.class.getResource("/filter").getPath()+"/";//PropertiesManager.getInstance().getSinglePropertyValue("filter.filePath", String.class);
         if (StringUtils.isNotBlank(filePath)) {
             filterFilePath = filePath;
         }

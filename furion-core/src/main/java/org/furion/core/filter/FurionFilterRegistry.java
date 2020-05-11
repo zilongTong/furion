@@ -47,7 +47,7 @@ public final class FurionFilterRegistry implements Serializable {
         while (headFilter.hasNext()) {
             Node<FurionFilter> index = headFilter.next;
             if (furionFilter == (index.item)) {
-                if (index.next.item != null)
+                if (index.next != null && index.next.item != null)
                     return true;
             }
         }
@@ -102,6 +102,7 @@ public final class FurionFilterRegistry implements Serializable {
      */
     public void registerFilter(String className, FurionFilter filter) {
         System.out.println("Filter注册 className:" + className + ",filterName:" + filter.getClass().getName());
+        registerFilter(filter);
     }
 
     public void removeFilter(String filterName) {

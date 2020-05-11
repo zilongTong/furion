@@ -55,7 +55,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
     }
 
     protected Boolean getCurrentExclusiveOwnerWhetherWriteAndFlush() {
-        return filterExclusiveOwnerThreadLocal.get().isWhetherWriteAndFlush();
+        return filterExclusiveOwnerThreadLocal.get() != null && filterExclusiveOwnerThreadLocal.get().isWhetherWriteAndFlush();
     }
 
     protected Long getCurrentExclusiveOwnerRequestId() {
@@ -76,7 +76,7 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
 
     protected boolean shouldFilter0() {
         if (filterType().equalsIgnoreCase(FilterType.PRE.name())) {
-            return shouldFilter() && getCurrentExclusiveOwnerWhetherWriteAndFlush();
+            return shouldFilter() && !getCurrentExclusiveOwnerWhetherWriteAndFlush();
         }
         if (filterType().equalsIgnoreCase(FilterType.POST.name())) {
             return shouldFilter();
