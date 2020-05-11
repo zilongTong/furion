@@ -5,6 +5,7 @@ import io.netty.channel.socket.SocketChannel;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.furion.core.bean.eureka.Server;
+import org.furion.core.enumeration.MsgType;
 import org.furion.core.exception.NoChannelBindRequestException;
 import org.furion.core.protocol.server.FurionSocketChannel;
 
@@ -48,12 +49,12 @@ public class ClientChannelLRUContext {
         return socketChannelMap.get(clientId);
     }
 
-    public static Long getRequestIdByChannel(SocketChannel channel) {
+    public static FurionSocketChannel getRequestIdByChannel(SocketChannel channel) {
         FurionSocketChannel furionSocketChannel = isUsedChannel.get(channel);
         if (furionSocketChannel == null || furionSocketChannel.getExclusiveOwnerRequest() == null) {
             throw new NoChannelBindRequestException(channel);
         }
-        return furionSocketChannel.getExclusiveOwnerRequest();
+        return furionSocketChannel;
     }
 
     public static SocketChannel get(String clientId, Long requestId) {
@@ -78,21 +79,22 @@ public class ClientChannelLRUContext {
     }
 
 
-    public static boolean setBusy(SocketChannel socketChannel, Server sever, Long id) {
+    public static boolean setBusy(SocketChannel socketChannel, Server sever, Long id, MsgType msgType) {
         if (isUsedChannel.containsKey(socketChannel)) {
         } else {
             String key = getKey(sever);
             Vector<FurionSocketChannel> vector = getClientConnected(key);
             if (CollectionUtils.isNotEmpty(vector)) {
-                vector.forEach(f -> {
+                for (FurionSocketChannel f : vector) {
                     if (f.getSocketChannel() == socketChannel) {
                         vector.remove(f);
                         f.setFree(false);
                         f.setExclusiveOwnerRequest(id);
+                        f.setMsgType(msgType);
                         vector.addElement(f);
                         isUsedChannel.put(socketChannel, f);
                     }
-                });
+                }
                 socketChannelMap.put(key, vector);
             }
         }
@@ -102,7 +104,9 @@ public class ClientChannelLRUContext {
 
     public static void setFree(SocketChannel socketChannel) {
         if (isUsedChannel.containsKey(socketChannel)) {
-            isUsedChannel.remove(socketChannel).releaseChannel();
+            FurionSocketChannel furionSocketChannel = isUsedChannel.get(socketChannel);
+            isUsedChannel.remove(socketChannel);
+            furionSocketChannel.releaseChannel();
         } else {
             System.out.println("");
         }

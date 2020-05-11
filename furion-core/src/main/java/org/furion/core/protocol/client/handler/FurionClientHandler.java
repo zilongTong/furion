@@ -30,10 +30,12 @@ import org.furion.core.context.ClientChannelLRUContext;
 import org.furion.core.context.CountDownLatchLRUContext;
 import org.furion.core.context.FurionResponse;
 import org.furion.core.context.ResponseLRUContext;
+import org.furion.core.enumeration.MsgType;
 import org.furion.core.protocol.client.FurionClientChannelInitializer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.Timeout;
 import io.netty.util.TimerTask;
+import org.furion.core.protocol.server.FurionSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,9 +98,10 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
             System.out.println("心跳触发时间：" + new Date() + "heart beat currentTime:");
             // currentTime++;
 
+
             PingRequest pingRequest = new PingRequest(server);
             DefaultFullHttpRequest req = pingRequest.getHttpRequestInstance();
-
+            ClientChannelLRUContext.setBusy((SocketChannel) ctx.channel(), server, pingRequest.getRequestId(), MsgType.PING);
             ctx.channel().writeAndFlush(req);
             //  }
 
@@ -109,7 +112,6 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 
         channelRead1(ctx, msg);
-
 
 
 //        ctx.fireChannelRead(msg);
@@ -146,13 +148,13 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
 
             contentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
             SocketChannel socketChannel = (SocketChannel) ctx.channel();
-            Long requestId = ClientChannelLRUContext.getRequestIdByChannel(socketChannel);
-
-//             =response.headers().get("content-length");
-//            if (StringUtils.isEmpty(requestId)) {
-//                return;
-//            }
-
+            FurionSocketChannel furionSocketChannel = ClientChannelLRUContext.getRequestIdByChannel(socketChannel);
+            Long requestId = furionSocketChannel.getExclusiveOwnerRequest();
+            MsgType msgType = furionSocketChannel.getMsgType();
+            if (msgType != null && msgType == MsgType.PING) {
+                ClientChannelLRUContext.setFree((SocketChannel) ctx.channel());
+                return;
+            }
             result.setRequestId(requestId);
         }
         if (httpObject instanceof HttpContent) {
