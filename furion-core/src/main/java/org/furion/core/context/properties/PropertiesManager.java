@@ -9,12 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.furion.core.annotation.Ignore;
 import org.furion.core.annotation.PropertiesObject;
 import org.furion.core.annotation.PropertiesAutoRefresh;
-import org.furion.core.context.properties.convert.PrimitiveConverter;
-import org.furion.core.context.properties.convert.StringConverter;
-import org.furion.core.context.properties.convert.TypeConvert;
+import org.furion.core.constants.Constants;
 import org.furion.core.enumeration.PropertiesSource;
 import org.furion.core.enumeration.PropertyValueChangeType;
 import org.furion.core.utils.ClassUtil;
+import org.furion.core.utils.JsonUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -96,6 +95,7 @@ public final class PropertiesManager implements IPropertiesManager {
                     .eventType(PropertyValueChangeType.ADD)
                     .newValue(v.toString()).build());
         });
+        refresh(PropertiesSource.LOCAL,null);
     }
 
     /**
@@ -114,7 +114,15 @@ public final class PropertiesManager implements IPropertiesManager {
         String path = getLocalPropertiesFilePath();
         localProperties = new Properties();
         final File propsFile = new File(path);
-        if (propsFile.isFile()) {
+        if(propsFile.isDirectory()){
+            for(File configFile:propsFile.listFiles()){
+                try (InputStream is = new FileInputStream(configFile)) {
+                    localProperties.load(is);
+                } catch (final IOException e) {
+                    log.warn("Could not load props file?", e);
+                }
+            }
+        }else if (propsFile.isFile()) {
             try (InputStream is = new FileInputStream(propsFile)) {
                 localProperties.load(is);
             } catch (final IOException e) {
@@ -150,7 +158,7 @@ public final class PropertiesManager implements IPropertiesManager {
      *
      * @param container
      */
-    private void initPropertiesObject(IPropertiesContainer container) {
+    public void initPropertiesObject(IPropertiesContainer container) {
         Class<? extends IPropertiesContainer> aClass = container.getClass();
         PropertiesObject annotation = aClass.getAnnotation(PropertiesObject.class);
         String prefix = "";
@@ -185,7 +193,8 @@ public final class PropertiesManager implements IPropertiesManager {
             if (ClassUtil.isSingleType(type)) {
                 propertyValue = getSinglePropertyValue(key, type);
             } else if (Collection.class.isAssignableFrom(type)) {
-                propertyValue = getCollectionPropertyValue(key, (Class<? extends Collection>) type);
+                Type[] types = ((ParameterizedType)field.getGenericType()).getActualTypeArguments();
+                propertyValue = getCollectionPropertyValue(key, (Class<? extends Collection>) type,types[0]);
             } else if (Map.class.isAssignableFrom(type)) {
                 //获取V类型
                 ParameterizedType genericType = (ParameterizedType) field.getGenericType();
@@ -325,14 +334,27 @@ public final class PropertiesManager implements IPropertiesManager {
 
 
     @Override
-    public Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass) {
+    public Collection<Object> getCollectionPropertyValue(String key, Class<? extends Collection> tClass,Type t) {
         String value = getStringValue(key);
         //List。设定以key[0] key[0] 方式填充值
         if (tClass == List.class) {
             //以,分割形式
             if (StringUtils.isNotBlank(value)) {
-                String[] arr = value.split(",");
-                return Lists.newArrayList(arr);
+                String[] arr = value.split(";");
+                if("String".equals(t.getTypeName())) {
+                    return Lists.newArrayList(arr);
+                }else if("Integer".equals(t.getTypeName())){
+                    return Arrays.asList(arr).stream().map(Integer::valueOf).collect(Collectors.toList());
+                }else {
+                    return Arrays.asList(arr).stream().map(s-> {
+                        try{
+                            return JsonUtil.getObject(s, this.getClass().getClassLoader().loadClass(t.getTypeName()));
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }).collect(Collectors.toList());
+                }
             }
             //以[0]指定位置形式
             Map<String, String> vs = getListValue(key + "[", "]");
@@ -344,12 +366,39 @@ public final class PropertiesManager implements IPropertiesManager {
         } else if ((tClass == Set.class)) {
             //Set 值以 , 分割
             if (StringUtils.isNotBlank(value)) {
-                String[] arr = value.split(",");
+                String[] arr = value.split(Constants.SEGMENTATION);
                 return Sets.newHashSet(arr);
             }
         }
         return null;
     }
+
+//    @Override
+//    public Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass) {
+//        String value = getStringValue(key);
+//        //List。设定以key[0] key[0] 方式填充值
+//        if (tClass == List.class) {
+//            //以,分割形式
+//            if (StringUtils.isNotBlank(value)) {
+//                String[] arr = value.split(",");
+//                return Lists.newArrayList(arr);
+//            }
+//            //以[0]指定位置形式
+//            Map<String, String> vs = getListValue(key + "[", "]");
+//            if (MapUtils.isNotEmpty(vs)) {
+//                String[] arr = buildValueArr(vs);
+//                return Lists.newArrayList(arr);
+//            }
+//
+//        } else if ((tClass == Set.class)) {
+//            //Set 值以 , 分割
+//            if (StringUtils.isNotBlank(value)) {
+//                String[] arr = value.split(",");
+//                return Sets.newHashSet(arr);
+//            }
+//        }
+//        return null;
+//    }
 
 
     /**

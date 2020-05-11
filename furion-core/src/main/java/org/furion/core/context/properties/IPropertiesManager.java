@@ -2,6 +2,7 @@ package org.furion.core.context.properties;
 
 import org.furion.core.enumeration.PropertiesSource;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -30,7 +31,7 @@ public interface IPropertiesManager {
     /**
      * 获取String集合
      */
-    Collection<String> getCollectionPropertyValue(String key, Class<? extends Collection> tClass);
+    Collection<Object> getCollectionPropertyValue(String key, Class<? extends Collection> tClass, Type t);
 
 
     void register(IPropertiesContainer container);

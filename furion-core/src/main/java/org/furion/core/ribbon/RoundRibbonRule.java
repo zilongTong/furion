@@ -13,7 +13,7 @@ public class RoundRibbonRule extends AbstractLoadBalancerRule {
     @Override
     public Server choose(String key) {
         List<Server> serverList = EurekaNetWork.getServerList(key);
-        if (!serverList.isEmpty())
+        if (serverList!= null && !serverList.isEmpty())
             return serverList.get(atomicInteger.getAndIncrement() % serverList.size());
         return null;
     }

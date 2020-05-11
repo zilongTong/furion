@@ -1,5 +1,7 @@
 package org.furion.core.context;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.filter.FilterManager;
 
@@ -13,12 +15,14 @@ import org.slf4j.LoggerFactory;
 /**
  * 对外部用户的统一入口。
  */
+@Data
 public class FurionGatewayContext implements GatewayContext {
 
     private static final Logger LOG = LoggerFactory.getLogger(FurionGatewayContext.class);
     private static FurionGatewayContext INSTANCE;
     private PropertiesManager propertiesManager;
     private FurionProperties furionProperties;
+    private SystemProperties systemProperties;
     private FilterManager filterManager;
     private FurionFilterRegistry registry;
     /**
@@ -46,6 +50,7 @@ public class FurionGatewayContext implements GatewayContext {
 
     public static FurionGatewayContext getInstance() {
         if (INSTANCE == null) {
+            System.setProperty("config-path",FurionGatewayContext.class.getResource("/config").getPath());
             INSTANCE = new FurionGatewayContext((Class) null);
         }
         return INSTANCE;
@@ -62,18 +67,21 @@ public class FurionGatewayContext implements GatewayContext {
         }
         PROJECT_MAIN_CLASS = mainClass;
         propertiesManager = PropertiesManager.getInstance();
+        propertiesManager.init();
+        furionProperties = new FurionProperties();
+        systemProperties = new SystemProperties();
         filterManager = FilterManager.getInstance();
         registry = new FurionFilterRegistry();
         furionProperties = new FurionProperties();
         init();
     }
 
-    public static void main(String[] args) {
-        System.out.println(FurionGatewayContext.class.getResource("/META-INF").getPath());
+    public static void main(String[] args) throws Exception{
+        System.setProperty("config-path",FurionGatewayContext.class.getResource("/config").getPath());
+        FurionGatewayContext furionGatewayContext = new FurionGatewayContext(FurionGatewayContext.class);
     }
 
     private void init() {
-        propertiesManager.init();
         filterManager.init();
     }
 
