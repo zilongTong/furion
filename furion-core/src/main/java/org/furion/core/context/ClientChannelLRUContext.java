@@ -118,7 +118,7 @@ public class ClientChannelLRUContext {
 
     public static synchronized void remove(SocketChannel channel) {
         if (socketChannelMap != null && socketChannelMap.size() > 0) {
-            socketChannelMap.get(channel.remoteAddress()).remove(channel);
+            socketChannelMap.get(channel.remoteAddress().toString().substring(1)).remove(channel);
         }
     }
 
