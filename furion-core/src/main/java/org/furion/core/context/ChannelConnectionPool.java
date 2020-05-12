@@ -33,7 +33,7 @@ public class ChannelConnectionPool {
     private final int DEFAULT_INCREMENTAL_CONNECTIONS = 5;// 默认连接池自动增加的大小
     private final int DEFAULT_MAX_TOTAL_CONNECTIONS = 2048; // 默认连接池最大的大小
 
-    private int DEFAULT_INITIAL_CONNECTIONS_PER_HOST = 50; // 连接池的初始大小
+    private int DEFAULT_INITIAL_CONNECTIONS_PER_HOST = 5; // 连接池的初始大小
     private int DEFAULT_MAX_CONNECTIONS_PER_HOST = 200; // 连接池最大的大小
 
     public ChannelConnectionPool(Bootstrap bootstrap) {

@@ -20,6 +20,7 @@ public class FurionSocketChannel {
     public void releaseChannel() {
         isFree = true;
         exclusiveOwnerRequest = null;
+        msgType = null;
     }
 
     public FurionSocketChannel(SocketChannel socketChannel, boolean isFree) {
