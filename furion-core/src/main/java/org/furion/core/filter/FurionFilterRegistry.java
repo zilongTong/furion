@@ -38,7 +38,6 @@ public final class FurionFilterRegistry implements Serializable {
 
 
     public Boolean hasNext(FurionFilter furionFilter) {
-
         Node<FurionFilter> current = headFilter;
         while (current != null) {
             if (current.item == furionFilter) {

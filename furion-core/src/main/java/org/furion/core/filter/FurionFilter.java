@@ -2,6 +2,8 @@ package org.furion.core.filter;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import org.furion.core.exception.FilterExclusiveThreadLocalReleasedException;
 import org.furion.core.exception.FurionException;
 
@@ -14,8 +16,17 @@ public abstract class FurionFilter implements IFurionFilter, Comparable<FurionFi
 
     protected ChannelFuture writeAndFlush(Object o) {
         ChannelFuture future = getCurrentExclusiveOwnerChannel().writeAndFlush(o);
-        setCurrentExclusiveOwnerWhetherWriteAndFlush(true);
-        releaseCurrentThreadLocal();
+        future.addListener(new GenericFutureListener<Future<? super Void>>() {
+            @Override
+            public void operationComplete(Future<? super Void> future) throws Exception {
+                if (future.isSuccess()) {
+                    setCurrentExclusiveOwnerWhetherWriteAndFlush(true);
+                    releaseCurrentThreadLocal();
+                } else {
+                    System.out.println("回写客户端失败");
+                }
+            }
+        });
         return future;
         //ReferenceCountUtil.release(o);
     }

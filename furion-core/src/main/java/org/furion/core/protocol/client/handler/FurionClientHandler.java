@@ -90,7 +90,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         integer.incrementAndGet();
-        System.out.println("userEventTriggered....................." + integer.get());
+        System.out.println("client userEventTriggered....................." + integer.get());
 //        System.out.println("evt"+evt.toString());
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
@@ -102,7 +102,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
             PingRequest pingRequest = new PingRequest(server);
             DefaultFullHttpRequest req = pingRequest.getHttpRequestInstance();
             ClientChannelLRUContext.setBusy((SocketChannel) ctx.channel(), server, pingRequest.getRequestId(), MsgType.PING);
-            ReferenceCountUtil.retain(req);
+//            ReferenceCountUtil.retain(req);
             ctx.channel().writeAndFlush(req);
             //  }
 
@@ -111,7 +111,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
+        System.out.println("Furion Client channel Handler read..............");
         channelRead1(ctx, msg);
 
 
@@ -131,7 +131,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
     private void channelRead1(ChannelHandlerContext ctx, Object httpObject)
             throws Exception {
         System.out.println(ctx);
-        System.out.println("Furion Client channel Handler read..............");
+//        System.out.println("Furion Client channel Handler read..............");
 
         System.out.println("httpObject" + httpObject.toString());
 
@@ -141,10 +141,10 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
         if (httpObject instanceof HttpResponse) {
             HttpResponse response = (HttpResponse) httpObject;
             HttpHeaders headers = response.headers();
-            headers.entries().stream().forEach(i -> {
-                System.out.print(i.getKey() + ":");
-                System.out.println(i.getValue());
-            });
+//            headers.entries().stream().forEach(i -> {
+//                System.out.print(i.getKey() + ":");
+//                System.out.println(i.getValue());
+//            });
 
 
             contentType = response.headers().get(HttpHeaderNames.CONTENT_TYPE);
@@ -182,7 +182,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        System.out.println("channelInactive.....................");
+        System.out.println("FurionClientHandler channelInactive.....................");
         System.out.println(System.currentTimeMillis());
         ClientChannelLRUContext.remove((SocketChannel) ctx.channel());
         System.out.println("client socket disconnected-------------");
@@ -195,6 +195,7 @@ public class FurionClientHandler extends ChannelInboundHandlerAdapter implements
 //                timer.newTimeout(this, timeout, TimeUnit.MILLISECONDS);
 //            }
 //        }
+        ctx.close();
         ctx.fireChannelInactive();
     }
 

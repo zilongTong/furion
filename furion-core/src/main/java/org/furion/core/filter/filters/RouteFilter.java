@@ -1,9 +1,6 @@
 package org.furion.core.filter.filters;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelFuture;
 import io.netty.handler.codec.http.*;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
@@ -77,6 +74,7 @@ public class RouteFilter extends FurionFilter {
             server = furionServiceLoader.first().choose(urlOrServiceId);
             if(server == null)
                 writeAndFlush(getResponse(HttpResponseStatus.BAD_REQUEST,"no server"));
+
         }
         RequestCommand command = RequestLRUContext.get(requestId).builder();
         fullHttpRequest.headers().set("Host", server.getHost().concat(":").concat(String.valueOf(server.getPort())));
@@ -134,8 +132,7 @@ public class RouteFilter extends FurionFilter {
         return targetUrl.substring(indexOfSecond(targetUrl));
     }
 
-
-    private FullHttpResponse getResponse(HttpResponseStatus httpResponseStatus,String msg){
+    private FullHttpResponse getResponse(HttpResponseStatus httpResponseStatus, String msg) {
         FullHttpResponse fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus);
         fullHttpResponse.content().writeBytes(msg.getBytes());
         return fullHttpResponse;

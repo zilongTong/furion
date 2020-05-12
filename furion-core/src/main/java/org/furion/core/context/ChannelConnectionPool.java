@@ -7,6 +7,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.util.concurrent.CompleteFuture;
+import io.netty.util.concurrent.Future;
 import lombok.Data;
 import org.apache.commons.collections.CollectionUtils;
 import org.furion.core.bean.eureka.Server;
@@ -17,6 +19,7 @@ import org.furion.core.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Data
@@ -51,17 +54,20 @@ public class ChannelConnectionPool {
     }
 
 
-    public SocketChannel getConnect(Server server,Long requestId) {
-        SocketChannel channel = ClientChannelLRUContext.get(getKey(server),requestId);
+    public SocketChannel getConnect(Server server, Long requestId) {
+        SocketChannel channel = ClientChannelLRUContext.get(getKey(server), requestId);
         if (channel == null) {
             if (CollectionUtils.isNotEmpty(ClientChannelLRUContext.getClientConnected(getKey(server)))) {
                 if (!incrementConnections(server)) {
-                    return null;
+                    return channel;
                 }
             } else {
-                createPool(server);
+                createSingleConnect(server);
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                    createPool(server);
+                });
             }
-            return getConnect(server,requestId);
+            return getConnect(server, requestId);
         }
         return channel;
     }
@@ -77,15 +83,24 @@ public class ChannelConnectionPool {
         return new FurionSocketChannel((SocketChannel) future.channel(), true);
     }
 
-    public synchronized void createPool(Server server) {
+
+    public synchronized void createSingleConnect(Server server) {
         List<FurionSocketChannel> connections = new ArrayList<>();
         if (!StringUtils.isEmpty(server.getId())) {
+            connections.add(connect(server));
+            CopyOnWriteArrayList list = new CopyOnWriteArrayList(connections);
+            ClientChannelLRUContext.add(server.getId(), list);
+        }
+    }
+
+    public synchronized void createPool(Server server) {
+        if (!StringUtils.isEmpty(server.getId()) && CollectionUtils.isNotEmpty(ClientChannelLRUContext.getClientConnected(getKey(server)))) {
+            CopyOnWriteArrayList<FurionSocketChannel>
+                    connections = ClientChannelLRUContext.getClientConnected(getKey(server));
             for (int i = 0; i < DEFAULT_INITIAL_CONNECTIONS_PER_HOST; i++) {
                 connections.add(connect(server));
             }
-            CopyOnWriteArrayList list = new CopyOnWriteArrayList(connections);
-            ClientChannelLRUContext.add(server.getId(), list);
-
+            ClientChannelLRUContext.add(server.getId(), connections);
         }
     }
 
@@ -112,7 +127,7 @@ public class ChannelConnectionPool {
                 System.out.println(" 创建连接失败！ " + e.getMessage());
             }
         }
-        if(!furionSocketChannelList.isEmpty())
+        if (!furionSocketChannelList.isEmpty())
             socketChannels.addAll(furionSocketChannelList);
         return true;
     }
