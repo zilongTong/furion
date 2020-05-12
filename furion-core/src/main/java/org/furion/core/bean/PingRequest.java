@@ -48,13 +48,13 @@ public class PingRequest {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-//        ByteBuf content = null;
+        ByteBuf buf = Unpooled.EMPTY_BUFFER;
 //        try {
 ////            content = Unpooled.wrappedBuffer("ping".getBytes("UTF-8"));
 //        } catch (UnsupportedEncodingException e) {
 //            e.printStackTrace();
 //        }
-        request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.HEAD, uri.toASCIIString());
+        request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.HEAD, uri.toASCIIString(),buf);
 //        request.headers().set(HttpHeaderNames.CONTENT_TYPE, "application/json");
         request.headers().set(HttpHeaderNames.HOST, this.host);
 //        request.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, content.readableBytes());

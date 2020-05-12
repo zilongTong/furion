@@ -64,14 +64,14 @@ public class RouteFilter extends FurionFilter {
 
 
         //url大致分为配置类、监控类和普通请求
-        if(uri.endsWith("ico")){//过滤favicon.ico请求
+        if (uri.endsWith("ico")) {//过滤favicon.ico请求
             return null;
-        }else if (uri.startsWith(Constants.CONFIG_PATH)) {//处理配置请求
-            writeAndFlush(updateConfig(uri,fullHttpRequest));
-        }else if (uri.startsWith(Constants.MONITOR_PATH)){//处理监控请求
+        } else if (uri.startsWith(Constants.CONFIG_PATH)) {//处理配置请求
+            writeAndFlush(updateConfig(uri, fullHttpRequest));
+        } else if (uri.startsWith(Constants.MONITOR_PATH)) {//处理监控请求
 
-        }else {//处理一般请求
-            uri = uri.replaceAll(furionProperties.getPrefix(),"");//替换通用前缀
+        } else {//处理一般请求
+            uri = uri.replaceAll(furionProperties.getPrefix(), "");//替换通用前缀
             String urlOrServiceId = getServiceId(uri);
             Server server;
             if (urlOrServiceId.startsWith(Constants.HTTP_PREFIX)) {
@@ -81,8 +81,8 @@ public class RouteFilter extends FurionFilter {
             } else {
                 //serviceId
                 server = furionServiceLoader.first().choose(urlOrServiceId);
-                if(server == null)
-                    writeAndFlush(getResponse(HttpResponseStatus.BAD_REQUEST,"no server"));
+                if (server == null)
+                    writeAndFlush(getResponse(HttpResponseStatus.BAD_REQUEST, "no server"));
             }
             RequestCommand command = RequestLRUContext.get(requestId).builder();
             fullHttpRequest.headers().set("Host", server.getHost().concat(":").concat(String.valueOf(server.getPort())));
@@ -91,16 +91,7 @@ public class RouteFilter extends FurionFilter {
             fullHttpRequest.headers().set(REQUEST_ID, requestId);
             HttpNetWork httpNetWork = HttpNetFactory.fetchProcessor(ProtocolType.NETTY, server);
             FurionResponse response = (FurionResponse) httpNetWork.send(command);
-            writeAndFlush(response.getResponse()).addListener(new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(Future<? super Void> future) throws Exception {
-                    if(future.isSuccess()){
-                        System.out.println("回写客户端成功");
-                    }else {
-                        System.out.println("回写客户端失败");
-                    }
-                }
-            });
+            writeAndFlush(response.getResponse());
         }
         return null;
     }
@@ -144,13 +135,13 @@ public class RouteFilter extends FurionFilter {
                     break;
                 case Constants.CONFIG_PATH_FURION:
                     Properties properties = JsonUtil.getObject(src, Properties.class);
-                    propertiesManager.refresh(PropertiesSource.NET,properties);
+                    propertiesManager.refresh(PropertiesSource.NET, properties);
                     break;
                 case Constants.CONFIG_PATH_FIELTER:
-                    String filterPath = RouteFilter.class.getResource("/filter").getPath()+"/";
+                    String filterPath = RouteFilter.class.getResource("/filter").getPath() + "/";
                     String fileName = getJavaFileName(new String(src));
-                    if(!StringUtil.isNullOrEmpty(fileName)){
-                        try(FileOutputStream fos = new FileOutputStream(filterPath+fileName)){
+                    if (!StringUtil.isNullOrEmpty(fileName)) {
+                        try (FileOutputStream fos = new FileOutputStream(filterPath + fileName)) {
                             fos.write(src);
                             fos.flush();
                         }
@@ -160,32 +151,32 @@ public class RouteFilter extends FurionFilter {
                     break;
 
             }
-            return getResponse(HttpResponseStatus.OK,"更新配置成功");
-        }catch (Exception e){
-            System.out.println("更新配置失败"+e);
-            return getResponse(HttpResponseStatus.BAD_REQUEST,"更新配置失败");
+            return getResponse(HttpResponseStatus.OK, "更新配置成功");
+        } catch (Exception e) {
+            System.out.println("更新配置失败" + e);
+            return getResponse(HttpResponseStatus.BAD_REQUEST, "更新配置失败");
         }
 
     }
 
-    private String getJavaFileName(String src){
-        int startIndex = src.indexOf("class")+5;
+    private String getJavaFileName(String src) {
+        int startIndex = src.indexOf("class") + 5;
         int endIndex = src.indexOf("extends");
-        if(startIndex > 0 && endIndex > 0 && startIndex<=endIndex){
-            return src.substring(startIndex,endIndex).replaceAll(" ","").concat(".java");
-        }else {
+        if (startIndex > 0 && endIndex > 0 && startIndex <= endIndex) {
+            return src.substring(startIndex, endIndex).replaceAll(" ", "").concat(".java");
+        } else {
             System.out.println("java源文件格式异常");
             return "";
         }
     }
 
-    private FullHttpResponse getResponse(HttpResponseStatus httpResponseStatus,String msg){
+    private FullHttpResponse getResponse(HttpResponseStatus httpResponseStatus, String msg) {
         FullHttpResponse fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus);
         fullHttpResponse.content().writeBytes(msg.getBytes());
         return fullHttpResponse;
     }
 
-    private int indexOfSecond(String url){
+    private int indexOfSecond(String url) {
         return url.indexOf("/", 1);
     }
 

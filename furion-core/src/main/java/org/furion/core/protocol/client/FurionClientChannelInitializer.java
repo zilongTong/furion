@@ -73,7 +73,7 @@ public class FurionClientChannelInitializer extends ChannelInitializer<SocketCha
          * }
          *
          */
-        pipeline.addLast("idleStateHandler", new IdleStateHandler(6000L, 0, 0, TimeUnit.MILLISECONDS));
+        pipeline.addLast("idleStateHandler", new IdleStateHandler(1000L, 0, 0, TimeUnit.MILLISECONDS));
 
         //处理http服务的关键handler
         pipeline.addLast("codec", new HttpClientCodec());

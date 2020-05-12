@@ -112,6 +112,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
      */
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("server channelInactive ..........");
         try {
             disconnected();
         } finally {
@@ -162,7 +163,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public final void userEventTriggered(ChannelHandlerContext ctx, Object evt)
             throws Exception {
-        System.out.println("userEventTriggered---------------------");
+        System.out.println(" Server userEventTriggered---------------------");
         try {
             if (evt instanceof IdleStateEvent) {
                 LOG.debug("Got idle");

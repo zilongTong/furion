@@ -278,7 +278,7 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
 //            context.refresh();
             EurekaNetWork eurekaNetWork = new EurekaNetWork();//加载eureka类
             FurionGatewayContext.getInstance();//加载context
-            this.withPort(8080).start();
+            this.withPort(8888).start();
             stopWatch.stop();
             return context;
         } catch (Throwable var9) {
