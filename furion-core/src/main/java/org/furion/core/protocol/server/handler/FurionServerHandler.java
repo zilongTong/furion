@@ -1,5 +1,6 @@
 package org.furion.core.protocol.server.handler;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.*;
@@ -10,15 +11,25 @@ import io.netty.util.ReferenceCountUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.Promise;
+import io.netty.util.internal.StringUtil;
+import org.furion.core.constants.Constants;
+import org.furion.core.context.FurionGatewayContext;
 import org.furion.core.context.RequestCommand;
 import org.furion.core.context.RequestLRUContext;
+import org.furion.core.context.properties.PropertiesManager;
+import org.furion.core.enumeration.PropertiesSource;
 import org.furion.core.filter.FurionFilterRunner;
+import org.furion.core.filter.filters.RouteFilter;
 import org.furion.core.protocol.server.FurionServerNetWork;
+import org.furion.core.utils.JsonUtil;
 import org.furion.core.utils.id.GeneratorEnum;
 import org.furion.core.utils.id.KeyGeneratorFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.furion.core.enumeration.ConnectionState;
+
+import java.io.FileOutputStream;
+import java.util.Properties;
 
 import static org.furion.core.constants.Constants.REQUEST_ID;
 
@@ -38,6 +49,7 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
 
     protected volatile ChannelHandlerContext ctx;
     protected volatile Channel channel;
+    PropertiesManager propertiesManager;
 
     private volatile ConnectionState currentState;
     private volatile boolean tunneling = false;
@@ -57,6 +69,8 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
 
     public FurionServerHandler(FurionServerNetWork netWork) {
         this.netWork = netWork;
+        propertiesManager = FurionGatewayContext.getInstance().getPropertiesManager();
+
     }
 
     @Override
@@ -186,7 +200,17 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
             RequestCommand command = new RequestCommand(uid, fullHttpRequest);
             RequestLRUContext.add(uid, command);
             runner = new FurionFilterRunner(uid, channel);
-            runner.filter();
+            //url大致分为配置类、监控类和普通请求
+            String uri = fullHttpRequest.getUri();
+            if(uri.endsWith("ico")){//过滤favicon.ico请求
+                return;
+            }else if (uri.startsWith(Constants.CONFIG_PATH)) {//处理配置请求
+                channel.writeAndFlush(updateConfig(uri,fullHttpRequest));
+            }else if (uri.startsWith(Constants.MONITOR_PATH)){//处理监控请求
+
+            }else {
+                runner.filter();
+            }
             try {
                 ReferenceCountUtil.release(msg);
             } catch (IllegalReferenceCountException e) {
@@ -195,213 +219,55 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-//    @Override
-//    public void channelRead1(ChannelHandlerContext ctx, Object msg) throws Exception {
-//        System.out.println("=============================================");
-//        System.out.println(msg.toString());
-//        if (msg instanceof FullHttpRequest) {
-//
-//
-//            this.fullHttpRequest = (FullHttpRequest) msg;
-//            fullHttpRequest.headers().set(REQUEST_ID, KeyGeneratorFactory.gen(GeneratorEnum.IP).generate());
-//
-////        if (HttpDemoServer.isSSL) {
-////            System.out.println("Your session is protected by " +
-////                    ctx.pipeline().get(SslHandler.class).engine().getSession().getCipherSuite() +
-////                    " cipher suite.\n");
-////        }
-//            /**
-//             * 在服务器端打印请求信息
-//             */
-//            System.out.println("VERSION: " + fullHttpRequest.getProtocolVersion().text() + "\r\n");
-//            System.out.println("REQUEST_URI: " + fullHttpRequest.getUri() + "\r\n\r\n");
-//            System.out.println("\r\n\r\n");
-//            for (Map.Entry<String, String> entry : fullHttpRequest.headers()) {
-//                System.out.println("HEADER: " + entry.getKey() + '=' + entry.getValue() + "\r\n");
-//            }
-//
-//            /**
-//             * 服务器端返回信息
-//             */
-//            responseContent.setLength(0);
-//            responseContent.append("WELCOME TO THE WILD WILD WEB SERVER\r\n");
-//            responseContent.append("===================================\r\n");
-//
-//            responseContent.append("VERSION: " + fullHttpRequest.getProtocolVersion().text() + "\r\n");
-//            responseContent.append("REQUEST_URI: " + fullHttpRequest.getUri() + "\r\n\r\n");
-//            responseContent.append("\r\n\r\n");
-//            for (Map.Entry<String, String> entry : fullHttpRequest.headers()) {
-//                responseContent.append("HEADER: " + entry.getKey() + '=' + entry.getValue() + "\r\n");
-//            }
-//            responseContent.append("\r\n\r\n");
-//            Set<Cookie> cookies;
-//            String value = fullHttpRequest.headers().get(COOKIE);
-//            if (value == null) {
-//                cookies = Collections.emptySet();
-//            } else {
-//                cookies = CookieDecoder.decode(value);
-//            }
-//            for (Cookie cookie : cookies) {
-//                responseContent.append("COOKIE: " + cookie.toString() + "\r\n");
-//            }
-//            responseContent.append("\r\n\r\n");
-//
-//
-//            QueryStringDecoder queryDecoder = new QueryStringDecoder(fullHttpRequest.uri());
-//            final String uri = fullHttpRequest.getUri();
-//            HttpMethod method = fullHttpRequest.getMethod();
-//            // ????
-//            Map<String, String> params = null;
-//            // GET
-//            if (method == HttpMethod.GET) {
-//                Map<String, List<String>> getParams = queryDecoder.parameters();
-//                System.out.println(getParams);
-//            }
-//            // POST
-//            else if (method == HttpMethod.POST) {
-//                ByteBuf content = fullHttpRequest.content();
-//                if (content.isReadable()) {
-//                    String param = content.toString(Charset.forName("UTF-8"));
-//                    QueryStringDecoder postQueryStringDecoder = new QueryStringDecoder("/?" + param);
-//                    Map<String, List<String>> postParams = postQueryStringDecoder.parameters();
-//                    System.out.println(postParams);
-//                }
-//            }
-//            final String path = queryDecoder.path();
-//            System.out.println(path);
-//
-//            if (fullHttpRequest.getMethod().equals(HttpMethod.GET)) {
-//                //get请求
-//                QueryStringDecoder decoderQuery = new QueryStringDecoder(fullHttpRequest.uri());
-//                String query = decoderQuery.rawQuery();
-//                System.out.println(query);
-//                Map<String, List<String>> uriAttributes = decoderQuery.parameters();
-//                for (Map.Entry<String, List<String>> attr : uriAttributes.entrySet()) {
-//                    for (String attrVal : attr.getValue()) {
-//                        System.out.println("URI: " + attr.getKey() + '=' + attrVal + "\r\n");
-//                        responseContent.append("URI: " + attr.getKey() + '=' + attrVal + "\r\n");
-//                    }
-//                }
-//                responseContent.append("\r\n\r\n");
-//
-//                responseContent.append("\r\n\r\nEND OF GET CONTENT\r\n");
-//                writeResponse(ctx.channel());
-//                return;
-//            } else if (fullHttpRequest.method().equals(HttpMethod.POST)) {
-//                //post请求
-//
-//
-//                decoder = new HttpPostRequestDecoder(factory, fullHttpRequest);
-//                readingChunks = HttpHeaders.isTransferEncodingChunked(fullHttpRequest);
-//                responseContent.append("Is Chunked: " + readingChunks + "\r\n");
-//                responseContent.append("IsMultipart: " + decoder.isMultipart() + "\r\n");
-//
-//                try {
-//                    while (decoder.hasNext()) {
-//                        InterfaceHttpData data = decoder.next();
-//                        if (data != null) {
-//                            try {
-//                                writeHttpData(data);
-//                            } finally {
-//                                data.release();
-//                            }
-//                        }
-//                    }
-//                } catch (HttpPostRequestDecoder.EndOfDataDecoderException e1) {
-//                    responseContent.append("\r\n\r\nEND OF POST CONTENT\r\n\r\n");
-//                }
-//                writeResponse(ctx.channel());
-//                return;
-//            } else {
-//                System.out.println("discard.......");
-//                return;
-//            }
-//        }
-//        ReferenceCountUtil.release(msg);
-//    }
-//
-//    private void reset() {
-////        fullHttpRequest = null;
-//        // destroy the decoder to release all resources
-//        decoder.destroy();
-//        decoder = null;
-//    }
-//
-//    private void writeHttpData(InterfaceHttpData data) {
-//
-//        /**
-//         * HttpDataType有三种类型
-//         * Attribute, FileUpload, InternalAttribute
-//         */
-//        if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
-//            Attribute attribute = (Attribute) data;
-//            String value;
-//            try {
-//                value = attribute.getValue();
-//                System.out.println(value);
-//            } catch (IOException e1) {
-//                e1.printStackTrace();
-//                responseContent.append("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":"
-//                        + attribute.getName() + " Error while reading value: " + e1.getMessage() + "\r\n");
-//                return;
-//            }
-//            if (value.length() > 100) {
-//                responseContent.append("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":"
-//                        + attribute.getName() + " data too long\r\n");
-//            } else {
-//                responseContent.append("\r\nBODY Attribute: " + attribute.getHttpDataType().name() + ":"
-//                        + attribute.toString() + "\r\n");
-//            }
-//        }
-//    }
-//
-//
-//    /**
-//     * http返回响应数据
-//     *
-//     * @param channel
-//     */
-//    private void writeResponse(Channel channel, StringBuilder responseContent) {
-//        System.out.println(responseContent.toString());
-//        // Convert the response content to a ChannelBuffer.
-//        ByteBuf buf = copiedBuffer(responseContent.toString(), CharsetUtil.UTF_8);
-//        responseContent.setLength(0);
-//
-//        // Decide whether to close the connection or not.
-//        boolean close = fullHttpRequest.headers().contains(CONNECTION, HttpHeaders.Values.CLOSE, true)
-//                || fullHttpRequest.getProtocolVersion().equals(HttpVersion.HTTP_1_0)
-//                && !fullHttpRequest.headers().contains(CONNECTION, HttpHeaders.Values.KEEP_ALIVE, true);
-//
-//        // Build the response object.
-//        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buf);
-//        response.headers().set(CONTENT_TYPE, "text/plain; charset=UTF-8");
-//
-//        if (!close) {
-//            // There's no need to add 'Content-Length' header
-//            // if this is the last response.
-//            response.headers().set(CONTENT_LENGTH, buf.readableBytes());
-//        }
-//
-//        Set<Cookie> cookies;
-//        String value = fullHttpRequest.headers().get(COOKIE);
-//        if (value == null) {
-//            cookies = Collections.emptySet();
-//        } else {
-//            cookies = CookieDecoder.decode(value);
-//        }
-//        if (!cookies.isEmpty()) {
-//            // Reset the cookies if necessary.
-//            for (Cookie cookie : cookies) {
-//                response.headers().add(SET_COOKIE, ServerCookieEncoder.encode(cookie));
-//            }
-//        }
-//        // Write the response.
-//        ChannelFuture future = channel.writeAndFlush(response);
-//        // Close the connection after the write operation is done if necessary.
-//        if (close) {
-//            future.addListener(ChannelFutureListener.CLOSE);
-//        }
-//    }
+    public FullHttpResponse updateConfig(String uri, FullHttpRequest fullHttpRequest) {
+        try {
+            ByteBuf byteBuf = fullHttpRequest.content();
+            byte[] src = new byte[byteBuf.readableBytes()];
+            byteBuf.readBytes(src);
+            switch (uri) {
+                case Constants.CONFIG_PATH_SYSTEM:
+                    break;
+                case Constants.CONFIG_PATH_FURION:
+                    Properties properties = JsonUtil.getObject(src, Properties.class);
+                    propertiesManager.refresh(PropertiesSource.NET,properties);
+                    break;
+                case Constants.CONFIG_PATH_FIELTER:
+                    String filterPath = RouteFilter.class.getResource("/filter").getPath()+"/";
+                    String fileName = getJavaFileName(new String(src));
+                    if(!StringUtil.isNullOrEmpty(fileName)){
+                        try(FileOutputStream fos = new FileOutputStream(filterPath+fileName)){
+                            fos.write(src);
+                            fos.flush();
+                        }
+                    }
+                    break;
+                default:
+                    break;
 
+            }
+            return getResponse(HttpResponseStatus.OK,"更新配置成功");
+        }catch (Exception e){
+            System.out.println("更新配置失败"+e);
+            return getResponse(HttpResponseStatus.BAD_REQUEST,"更新配置失败");
+        }
+
+    }
+
+    private String getJavaFileName(String src){
+        int startIndex = src.indexOf("class")+5;
+        int endIndex = src.indexOf("extends");
+        if(startIndex > 0 && endIndex > 0 && startIndex<=endIndex){
+            return src.substring(startIndex,endIndex).replaceAll(" ","").concat(".java");
+        }else {
+            System.out.println("java源文件格式异常");
+            return "";
+        }
+    }
+
+    private FullHttpResponse getResponse(HttpResponseStatus httpResponseStatus,String msg){
+        FullHttpResponse fullHttpResponse = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, httpResponseStatus);
+        fullHttpResponse.content().writeBytes(msg.getBytes());
+        return fullHttpResponse;
+    }
 
 }

@@ -53,15 +53,12 @@ public final class FurionFilterRegistry implements Serializable {
 
 
     public FurionFilter getSuccessor(FurionFilter furionFilter) {
-
-        if (furionFilter == (headFilter.item)) {
-            return headFilter.next.item;
-        }
-        while (headFilter.hasNext()) {
-            Node<FurionFilter> index = headFilter.next;
-            if (furionFilter == (index.item)) {
-                return index.next.item;
+        Node<FurionFilter> current = headFilter;
+        while (current != null) {
+            if (current.item == furionFilter) {
+                return current.next.item;
             }
+            current = current.next;
         }
         return null;
     }

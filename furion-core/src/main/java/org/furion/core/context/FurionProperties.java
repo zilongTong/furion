@@ -16,8 +16,8 @@ public class FurionProperties extends BasePropertiesContainer {
     private boolean stripPrefix = true;
     private Boolean retryable = false;
     @Ignore
-    private Map<String, List<FurionProperties.FurionRoute>> routes = new LinkedHashMap();
-    private List<FurionProperties.FurionRoute> routeList = new ArrayList<>();
+    private Map<String, List<FurionProperties.FurionRoute>> routes;
+    private List<FurionProperties.FurionRoute> routeList;
     private boolean addProxyHeaders = true;
     private boolean addHostHeader = false;
     private Set<String> ignoredServices = new LinkedHashSet();
@@ -70,6 +70,7 @@ public class FurionProperties extends BasePropertiesContainer {
 
         //go python
         private List<String> ipList;
+        private List<String> notVisitList;
 
         private String url;
         private boolean stripPrefix = true;
