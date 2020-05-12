@@ -12,11 +12,10 @@ public class RandomRibbonRule extends AbstractLoadBalancerRule {
 
     @Override
     public Server choose(String key) {
-//        List<Server> serverList = EurekaNetWork.getServerList(key);
-//        if (serverList!= null && !serverList.isEmpty())
-//            return serverList.get(ThreadLocalRandom.current().nextInt(serverList.size()));
-//        return null;
-        return new Server("10.26.253.30",8080);
+        List<Server> serverList = EurekaNetWork.getServerList(key);
+        if (serverList!= null && !serverList.isEmpty())
+            return serverList.get(ThreadLocalRandom.current().nextInt(serverList.size()));
+        return null;
     }
 }
 
