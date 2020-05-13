@@ -44,6 +44,8 @@ public abstract class Constants {
     public static final String CONFIG_PATH_SYSTEM = "/config/system";
     public static final String CONFIG_PATH_FURION = "/config/route";
     public static final String CONFIG_PATH_FIELTER = "/config/filter";
+    public static final String CONFIG_PATH_UNLOAD = "/config/unload";
+    public static final String CONFIG_PATH_LOAD = "/config/load";
     public static final String MONITOR_PATH = "/config/filter";
 
 

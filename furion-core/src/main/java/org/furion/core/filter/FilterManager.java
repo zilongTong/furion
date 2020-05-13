@@ -88,6 +88,10 @@ public final class FilterManager {
 
     }
 
+    public void loadFilter(String fileName){
+        fileLastModify.put(fileName,-1l);
+    }
+
     private void handleFile(File file) {
         if (file == null) {
             return;
@@ -107,6 +111,9 @@ public final class FilterManager {
                 }
                 if (FurionFilter.class.isAssignableFrom(filter)) {
                     try {
+                        //卸载之前版本的类
+                        String className = filter.getSimpleName();
+                        filterRegistry.removeFilter(className);
                         Object o = filter.newInstance();
                         filterRegistry.registerFilter(filter.getName(), (FurionFilter) o);
                         return;

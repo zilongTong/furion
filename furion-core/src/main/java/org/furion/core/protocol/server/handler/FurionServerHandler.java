@@ -18,6 +18,8 @@ import org.furion.core.context.RequestCommand;
 import org.furion.core.context.RequestLRUContext;
 import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.enumeration.PropertiesSource;
+import org.furion.core.filter.FilterManager;
+import org.furion.core.filter.FurionFilterRegistry;
 import org.furion.core.filter.FurionFilterRunner;
 import org.furion.core.filter.filters.RouteFilter;
 import org.furion.core.protocol.server.FurionServerNetWork;
@@ -50,6 +52,8 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
     protected volatile ChannelHandlerContext ctx;
     protected volatile Channel channel;
     PropertiesManager propertiesManager;
+    FurionFilterRegistry furionFilterRegistry;
+    FilterManager filterManager;
 
     private volatile ConnectionState currentState;
     private volatile boolean tunneling = false;
@@ -70,7 +74,8 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
     public FurionServerHandler(FurionServerNetWork netWork) {
         this.netWork = netWork;
         propertiesManager = FurionGatewayContext.getInstance().getPropertiesManager();
-
+        furionFilterRegistry = FurionGatewayContext.getInstance().getRegistry();
+        filterManager = FurionGatewayContext.getInstance().getFilterManager();
     }
 
     @Override
@@ -242,6 +247,12 @@ public class FurionServerHandler extends ChannelInboundHandlerAdapter {
                         }
                     }
                     break;
+                case Constants.CONFIG_PATH_UNLOAD:
+                    furionFilterRegistry.removeFilter(new String(src));
+                    break;
+                case Constants.CONFIG_PATH_LOAD:
+                    String name = RouteFilter.class.getResource("/filter").getPath()+"/"+new String(src)+".java";
+                    filterManager.loadFilter(name);
                 default:
                     break;
 

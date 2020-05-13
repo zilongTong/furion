@@ -100,45 +100,52 @@ public final class FurionFilterRegistry implements Serializable {
 
     public void removeFilter(String filterName) {
         lock.lock();
-        if (filterName.equalsIgnoreCase("RouteFilter")) {
-            throw new IllegalFilterUninstallException();
-        }
+        try{
+            if (filterName.equalsIgnoreCase("RouteFilter")) {
+                throw new IllegalFilterUninstallException();
+            }
 
 
-        if (filterName.equalsIgnoreCase(headFilter.item.getClass().getName())) {
-            headFilter = headFilter.next;
-            headFilter.next.prev = null;
-            return;
-        }
-
-        while (headFilter.hasNext()) {
-            headFilter = headFilter.next;
             if (filterName.equalsIgnoreCase(headFilter.item.getClass().getName())) {
-                headFilter.prev = headFilter.next;
-                headFilter.next.prev = headFilter;
+                headFilter = headFilter.next;
+                headFilter.prev = null;
                 return;
             }
+
+            Node tmp = headFilter;
+            while (tmp.hasNext()) {
+                tmp = tmp.next;
+                if (filterName.equalsIgnoreCase(tmp.item.getClass().getName())) {
+                    tmp.prev.next = tmp.next;
+                    tmp.next.prev = tmp.prev;
+                    break;
+                }
+          }
+        }finally {
+            lock.unlock();
         }
-        lock.unlock();
     }
 
     public void registerFilter(FurionFilter filter) {
 
         lock.lock();
-        if (filter == null) {
-            throw new UnknownFurionFilterException();
-        }
-        if (FilterType.PRE.name().equalsIgnoreCase(filter.filterType())) {
-            if (headFilter == routeFilter) {
-                linkBefore(filter, headFilter);
-            } else {
-                insertPreNode(filter, headFilter);
+        try {
+            if (filter == null) {
+                throw new UnknownFurionFilterException();
             }
+            if (FilterType.PRE.name().equalsIgnoreCase(filter.filterType())) {
+                if (headFilter == routeFilter) {
+                    linkBefore(filter, headFilter);
+                } else {
+                    insertPreNode(filter, headFilter);
+                }
+            }
+            if (FilterType.POST.name().equalsIgnoreCase(filter.filterType())) {
+                insertPostNode(filter, routeFilter);
+            }
+        }finally {
+            lock.unlock();
         }
-        if (FilterType.POST.name().equalsIgnoreCase(filter.filterType())) {
-            insertPostNode(filter, routeFilter);
-        }
-        lock.unlock();
     }
 
     public void iterator() {
