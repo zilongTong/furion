@@ -1,12 +1,5 @@
 package org.furion.core.filter;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.sun.tools.javac.util.Assert;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.furion.core.context.FurionGatewayContext;
-import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.utils.FileUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

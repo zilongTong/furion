@@ -286,10 +286,6 @@ public class FurionDefaultHttpServerBootstrap implements FurionHttpServerBootstr
         }
     }
 
-    @Override
-    public FurionHttpServerBootstrap withTransportProtocol(com.sun.deploy.net.protocol.ProtocolType protocol) {
-        return null;
-    }
 
     @Override
     public FurionHttpServerBootstrap withUseDnsSec(boolean useDnsSec) {

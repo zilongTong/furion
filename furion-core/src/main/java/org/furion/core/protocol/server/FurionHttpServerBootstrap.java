@@ -1,6 +1,7 @@
 package org.furion.core.protocol.server;
 
-import com.sun.deploy.net.protocol.ProtocolType;
+
+import org.furion.core.enumeration.ProtocolType;
 
 import java.net.InetSocketAddress;
 

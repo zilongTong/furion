@@ -1,7 +1,6 @@
 package org.furion.core.utils;
 
 import com.google.common.collect.Sets;
-import com.sun.tools.javac.resources.compiler;
 import org.apache.commons.io.FileUtils;
 
 import javax.tools.JavaCompiler;
@@ -9,7 +8,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

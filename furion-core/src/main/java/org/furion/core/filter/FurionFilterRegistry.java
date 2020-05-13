@@ -1,14 +1,10 @@
 package org.furion.core.filter;
 
-
-import com.sun.tools.javac.util.Assert;
 import org.furion.core.exception.IllegalFilterUninstallException;
 import org.furion.core.exception.UnknownFurionFilterException;
 import org.furion.core.filter.filters.RouteFilter;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.furion.core.constants.Constants.ROUTE;
@@ -100,7 +96,7 @@ public final class FurionFilterRegistry implements Serializable {
 
     public void removeFilter(String filterName) {
         lock.lock();
-        try{
+        try {
             if (filterName.equalsIgnoreCase("RouteFilter")) {
                 throw new IllegalFilterUninstallException();
             }
@@ -120,8 +116,8 @@ public final class FurionFilterRegistry implements Serializable {
                     tmp.next.prev = tmp.prev;
                     break;
                 }
-          }
-        }finally {
+            }
+        } finally {
             lock.unlock();
         }
     }
@@ -143,7 +139,7 @@ public final class FurionFilterRegistry implements Serializable {
             if (FilterType.POST.name().equalsIgnoreCase(filter.filterType())) {
                 insertPostNode(filter, routeFilter);
             }
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
