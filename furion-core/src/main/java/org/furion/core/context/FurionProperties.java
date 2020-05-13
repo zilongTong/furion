@@ -1,6 +1,7 @@
 package org.furion.core.context;
 
 import lombok.Data;
+import org.apache.commons.collections.CollectionUtils;
 import org.furion.core.annotation.Ignore;
 import org.furion.core.context.properties.BasePropertiesContainer;
 import org.furion.core.context.properties.IPropertyValueChangeEvent;
@@ -51,14 +52,16 @@ public class FurionProperties extends BasePropertiesContainer {
         //routeList --> routes
         FurionGatewayContext.getInstance().getPropertiesManager().initPropertiesObject(this);
         routes = new HashMap<>();
-        for(FurionRoute furionRoute:routeList){
-            String path = furionRoute.path;
-            if(path.indexOf("/",1)>0)
-                path = path.substring(0,path.indexOf("/",1));
-            if(!routes.containsKey(path)){
-                routes.put(path,new ArrayList<>());
+        if(CollectionUtils.isNotEmpty(routeList)) {
+            for (FurionRoute furionRoute : routeList) {
+                String path = furionRoute.path;
+                if (path.indexOf("/", 1) > 0)
+                    path = path.substring(0, path.indexOf("/", 1));
+                if (!routes.containsKey(path)) {
+                    routes.put(path, new ArrayList<>());
+                }
+                routes.get(path).add(furionRoute);
             }
-            routes.get(path).add(furionRoute);
         }
     }
 

@@ -128,6 +128,13 @@ public final class PropertiesManager implements IPropertiesManager {
             } catch (final IOException e) {
                 log.warn("Could not load props file?", e);
             }
+        }else {//jar文件
+            try (InputStream is = this.getClass().getResourceAsStream("/config/furion.properties");InputStream iss =   this.getClass().getResourceAsStream("/config/route.properties")) {
+                localProperties.load(is);
+                localProperties.load(iss);
+            } catch (final IOException e) {
+                log.warn("Could not load props file?", e);
+            }
         }
     }
 

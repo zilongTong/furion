@@ -2,6 +2,7 @@ package org.furion.core.discovery;
 
 
 import org.furion.core.bean.eureka.Server;
+import org.furion.core.context.properties.PropertiesManager;
 import org.furion.core.utils.AnalysisXmlUtil;
 import org.furion.core.bean.eureka.ApplicationBean;
 import org.furion.core.utils.OkHttpUtil;
@@ -43,7 +44,9 @@ public class EurekaNetWork {
 
     static {
         //这两项从配置文件读取
-        eurekaUrls = "http://eureka-test.zmlearn.com/eureka/".split(",");
+//        eurekaUrls = "http://eureka-test.zmlearn.com/eureka/".split(",");
+        eurekaUrls = PropertiesManager.getInstance().getSinglePropertyValue("eureka",String.class).split(",");
+
         long timeGap = 10l;
         executorService.scheduleAtFixedRate(new Runnable() {
             @Override
