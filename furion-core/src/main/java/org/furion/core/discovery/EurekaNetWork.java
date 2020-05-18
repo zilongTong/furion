@@ -44,7 +44,7 @@ public class EurekaNetWork {
 
     static {
         //这两项从配置文件读取
-//        eurekaUrls = "http://eureka-test.zmlearn.com/eureka/".split(",");
+//        eurekaUrls = "".split(",");
         eurekaUrls = PropertiesManager.getInstance().getSinglePropertyValue("eureka",String.class).split(",");
 
         long timeGap = 10l;
